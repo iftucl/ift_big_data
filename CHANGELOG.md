@@ -1,7 +1,7 @@
 # CHANGELOG.md -- UCL-IFT BIG DATA
 
-## [0.0.0] - 2023-11-04
+## [0.0.0] - 2025-01-11
 
 ### New
 
-- **New** : Added Infrastructure Docker files and docker-compose.yml [Issue #1]
+- **New** : Added Infrastructure Docker files and docker-compose.yml #1

@@ -1,0 +1,4 @@
+[flake8]
+ignore=CVS,.git,flake8.egg-info
+max-line-length=110
+extend-ignore=W23

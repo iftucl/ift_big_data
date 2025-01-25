@@ -105,3 +105,42 @@ WHERE trader IN ('MRH5231', 'DGR1983')  -- we want only positions for our trader
 AND cob_date = '2023-10-27'		  -- and only for specific date
 GROUP BY trader, cob_date
 ORDER BY sum_amount DESC; 		-- this sorts out output from larger to smaller
+
+/*-------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
+Section 4. JOINS statements
+SELECT what FROM whichTableOne JOIN whichTableTwo ON whichTableOne.ID = whichTableTwo.ID;
+*/--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- 4.a left join example: get the prices for ABBV in a specific date
+SELECT symbol, security, cob_date, close_price FROM equity_static
+LEFT JOIN equity_prices ON equity_static.symbol = equity_prices.symbol_id AND equity_prices.cob_date = '2021-04-15'
+WHERE symbol = 'ABBV';
+
+-- 4.b left join with some calculations. As an extra, we introduce HAVING clause
+--     in this query, we take the derived trade price (i.e. amount bought in notional vs quantity)
+--     and we compare it against the close price recorded in the market
+SELECT symbol, equity_prices.cob_date,
+	AVG(ABS(net_amount/net_quantity)) AS avg_trade_price, 
+	AVG(close_price) AS close_px,
+	AVG(ABS(net_amount/net_quantity)) / AVG(close_price) AS diff_px FROM portfolio_positions
+LEFT JOIN equity_prices ON portfolio_positions.symbol = equity_prices.symbol_id 
+WHERE equity_prices.cob_date = '2023-10-27'	
+GROUP BY symbol, equity_prices.cob_date
+HAVING AVG(ABS(net_amount/net_quantity)) / AVG(close_price) - 1 > 1 	-- HAVING is the WHERE condition applied on grouped data from which we have applied a function; 
+ORDER BY diff_px DESC; 	-- WHERE clause is used for filtering rows and it applies on each and every row, while HAVING clause is used to filter groups in SQL
+-- disclaimer: postgresql having doesn't support alias filtering while sqlite does
+
+-- 4.c left join with tables containing same column names
+-- you are tasked with the challenge of finding the largest 5 losses across all portfolios
+-- for the day ending on 2023-10-27
+SELECT portfolio_positions.trader,
+	portfolio_positions.cob_date,
+	portfolio_positions.symbol,
+	portfolio_positions.net_amount,
+	portfolio_positions.net_quantity, 
+	portfolio_positions.net_quantity * equity_prices.close_price as mtm_amount, 
+	portfolio_positions.net_quantity * equity_prices.close_price - portfolio_positions.net_amount as pnl
+FROM portfolio_positions
+LEFT JOIN equity_prices ON portfolio_positions.symbol = equity_prices.symbol_id AND portfolio_positions.cob_date = equity_prices.cob_date
+WHERE portfolio_positions.cob_date = '2023-10-27'
+ORDER BY pnl
+LIMIT 5;

@@ -9,7 +9,7 @@
 
 # Welcome
 
-Welcome to the primary repository for our course on Big Data in Quantitative Finance.
+Welcome to the primary repository for our course on **Big Data in Quantitative Finance**.
 
 This class employs a specific technology stack to support our learning objectives and practical activities. The diagram below illustrates the key components of this stack, which will serve as the foundation for our coursework and projects throughout the semester.
 
@@ -90,7 +90,7 @@ For Windows users, it is necessary to have the followings:
 
 To run, cd in this directory and:
 
-```
+```bash
 
 docker build
 docker compose up
@@ -98,7 +98,7 @@ docker compose up
 ```
 or
 
-```
+```bash
 
 docker compose up --build
 
@@ -106,7 +106,7 @@ docker compose up --build
 
 **Please note**: the build of all containers might take some time, it is suggested to build and start only the containers needed:
 
-```
+```bash
 
 docker compose up --build -d mongo_db
 
@@ -124,3 +124,8 @@ In order to access, use the username `admin@admin.com` and password `root` as sp
 host: host.docker.internal
 
 ```
+
+### minio
+
+MinIO user interface is available through web browser on localhost:9000. 
+In order to access, use the username `ift_bigdata` and password `minio_password` as specified in Docker File under the node `minio`.

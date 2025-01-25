@@ -56,7 +56,7 @@ services:
         postgres_db:
           condition: service_healthy
       build: 
-        dockerfile: ./DataBases/DBs/DMOBondPrices/Dockerfile
+        dockerfile: ./DataBases/DBs/Equity/Dockerfile
     pgadmin:
       container_name: pg_admin
       image: dpage/pgadmin4
@@ -175,7 +175,29 @@ services:
         mc anonymous set public minio/icebergwarehouse;
         tail -f /dev/null
         "      
-
+    iceberg_rest:
+      container_name: iceberg_rest
+      image: tabulario/iceberg-rest
+      ports:
+        - "8181:8181"
+      environment:
+        - AWS_ACCESS_KEY_ID=ift_bigdata
+        - AWS_SECRET_ACCESS_KEY=minio_password
+        - AWS_REGION=us-east-1
+        - CATALOG_S3_PATH__STYLE__ACCESS=true
+        - CATALOG_WAREHOUSE=s3://icebergwarehouse/
+        - CATALOG_IO__IMPL=org.apache.iceberg.aws.s3.S3FileIO
+        - CATALOG_S3_ENDPOINT=http://minio:9000
+      depends_on:
+        - minio
+    pythonice:
+      container_name: pythonice
+      image: python:3.9
+      working_dir: /app
+      command: tail -f /dev/null
+      depends_on:
+        - minio
+        - iceberg_rest
 networks:
   proxynet:
     name: database_network

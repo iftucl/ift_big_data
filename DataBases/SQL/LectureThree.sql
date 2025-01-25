@@ -2,7 +2,7 @@
 UCL -- Institute of Finance & Technology -- Big Data in Finance
 
 Author	: Luca Cocconcelli
-Lecture	: 2024-02-01
+Lecture	: 2025-01-31
 Topic	: SQL - Structured Query Language
 */
 
@@ -16,9 +16,9 @@ docker compose up to launch PostgresSQL
 for non-docker users, download sqlite from here and follow installation instructions: https://www.sqlite.org/download.html
 
 for Windows Users:
-First, create a new folder e.g., C:\sqlite.
-Second, extract the content of the file that you downloaded in the previous section to the C:\sqlite folder. You should see three programs in the C:\sqlite folder
-Third, run sqlite3.exe
+ - First, create a new folder e.g., C:\sqlite.
+ - Second, extract the content of the file that you downloaded in the previous section to the C:\sqlite folder. You should see three programs in the C:\sqlite folder
+ - Third, run sqlite3.exe
 
 download sqlite browser from here https://sqlitebrowser.org/blog/portableapp-for-3-11-2-release-now-available/
 
@@ -64,7 +64,7 @@ SELECT * FROM equity_static WHERE gics_sector = 'Industrials';
 -- 2.b WHERE equals: this statement selects all columns in the table equity_prices where the date is 21 November 2023
 SELECT cob_date, symbol_id, close_price FROM equity_prices WHERE cob_date = '2023-11-21';
 
--- 2.c WHERE like: as before but it filters from the gics_industry field by using the like opearator with the % %
+-- 2.c WHERE like: as before but it filters from the gics_industry field by using the like operator with the % %
 SELECT symbol, gics_industry FROM equity_static WHERE gics_industry LIKE '%Health%';
 
 -- 2.d WHERE is greater than: this query filters upon the condition that the trader position is greater than 10000000
@@ -144,3 +144,21 @@ LEFT JOIN equity_prices ON portfolio_positions.symbol = equity_prices.symbol_id 
 WHERE portfolio_positions.cob_date = '2023-10-27'
 ORDER BY pnl
 LIMIT 5;
+
+/*-------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
+SECTION 5
+CASE to return column values based on conditions
+*/--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- 5.a CASE WHEN operates as an if-else condition: it verifies if a condition is met, WHEN the condition is satisfied, returns a value, else moves to the next WHEN
+-- condition. It ends the if-else loop when the END is met. In order to close the CASE statement you must declare where it END(S)
+SELECT * FROM portfolio_positions WHERE net_quantity < 0;
+SELECT symbol, ccy,
+CASE 
+	WHEN net_quantity < 0 THEN 'SHORT'
+	WHEN net_quantity > 0 THEN 'LONG'
+	ELSE 'NEUTRAL'
+	END AS position_type,
+SUM(net_amount)
+FROM portfolio_positions 
+WHERE cob_date = '2023-10-27'
+GROUP BY symbol, ccy, position_type;

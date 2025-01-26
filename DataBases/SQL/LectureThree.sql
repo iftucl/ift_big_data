@@ -162,3 +162,30 @@ SUM(net_amount)
 FROM portfolio_positions 
 WHERE cob_date = '2023-10-27'
 GROUP BY symbol, ccy, position_type;
+
+
+/*-------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
+SECTION 6
+CREATE, DELETE & UPDATE operations
+*/--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- 6.a we insert a position for DMZ1796 Trader
+INSERT INTO fift.cash_equity.portfolio_positions 
+	(pos_id, cob_date, trader, symbol, ccy, net_quantity, net_amount)
+VALUES 
+	('2023-10-27DMZ1796AAPLUSD', '2023-10-27', 'DMZ1796', 'AAPL', 'USD', 1000, 150000.00);
+-- check the position now exists
+SELECT * FROM portfolio_positions WHERE trader = 'DMZ1796' AND symbol = 'AAPL';
+
+-- 6.b let's amend the quantity
+UPDATE fift.cash_equity.portfolio_positions
+SET net_quantity = 1500
+WHERE trader = 'DMZ1796' AND symbol = 'AAPL';
+-- check the update was successful
+SELECT * FROM portfolio_positions WHERE trader = 'DMZ1796' AND symbol = 'AAPL';
+
+-- 6.c let's now delete this entry
+DELETE FROM fift.cash_equity.portfolio_positions
+WHERE trader = 'DMZ1796' AND symbol = 'AAPL';
+-- and now the position should be removed from our database
+SELECT * FROM portfolio_positions WHERE trader = 'DMZ1796' AND symbol = 'AAPL';

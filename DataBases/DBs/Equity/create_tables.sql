@@ -3,7 +3,7 @@ CREATE SCHEMA IF NOT EXISTS cash_equity AUTHORIZATION postgres;
 
 -- Equity Static
 CREATE TABLE IF NOT EXISTS fift.cash_equity.equity_static (
-	"symbol" CHAR(12) PRIMARY KEY,
+	"symbol" VARCHAR(12) PRIMARY KEY,
 	"security" TEXT,
 	"gics_sector"	TEXT,
 	"gics_industry"	TEXT,
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS fift.cash_equity.equity_prices (
 	"volume"	NUMERIC,
 	"currency" CHAR(3),
 	"cob_date"	DATE NOT NULL,
-	"symbol_id"	CHAR(12)
+	"symbol_id"	VARCHAR(12)
 	
 );
 ALTER TABLE fift.cash_equity.equity_prices ALTER COLUMN price_id TYPE VARCHAR(252);
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS fift.cash_equity.portfolio_positions (
 	"pos_id" TEXT PRIMARY KEY,
 	"cob_date"	DATE NOT NULL,
 	"trader"	CHAR(7) NOT NULL,
-	"symbol"	CHAR(12) NOT NULL,
+	"symbol"	VARCHAR(12) NOT NULL,
 	"ccy"	CHAR(3) NOT NULL,
 	"net_quantity"	NUMERIC NOT NULL,
 	"net_amount"	NUMERIC NOT NULL

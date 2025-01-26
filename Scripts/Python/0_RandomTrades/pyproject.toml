@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "0-randomtrades"
+version = "0.1.0"
+description = "Generates trades randomly"
+authors = ["Luca Cocconcelli"]
+license = "n"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+sqlalchemy = "^2.0.37"
+avro = "^1.12.0"
+pyarrow = "^18.0.0"
+psycopg2 = "^2.9.10"
+pydantic = "^2.10.6"
+ift-global = {git = "https://github.com/iftucl/ift_global.git"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

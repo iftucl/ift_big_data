@@ -173,6 +173,9 @@ services:
         sleep 10 && /usr/bin/mc rm -r --force minio/icebergwarehouse;
         sleep 10 && /usr/bin/mc mb minio/icebergwarehouse;
         mc anonymous set public minio/icebergwarehouse;
+        sleep 10 && /usr/bin/mc rm -r --force minio/iftbigdata;
+        sleep 10 && /usr/bin/mc mb minio/iftbigdata;
+        mc anonymous set public minio/iftbigdata;
         tail -f /dev/null
         "      
     iceberg_rest:

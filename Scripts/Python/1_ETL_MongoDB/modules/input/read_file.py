@@ -7,9 +7,7 @@ Topic   : Main.py
 Project : MongoDB Trades uploader
 Desc    : Class to find, read and return latest file in specific directory.
           Please, note, file conventions expects datetime stamp as %Y%m%d%H%M%S
-          before '.' file name extension. This is used to sort latest file.
-
-
+          before '.' file name extension. This is used to sort latest file
 """
 
 
@@ -44,14 +42,19 @@ class ReadInputFiles:
         self.log_file = log_file
         self.file_config = file_config
         self.file_name, self.file_type = self.get_latest_input_file()
-        self.minio_client = MinioFileSystemRepo(bucket_name="iftbigdata")
+    
+    def _minio_client(self):
+        return  MinioFileSystemRepo(bucket_name="iftbigdata")
+    @property
+    def minio_client(self):
+        return self._minio_client()
 
     def _get_input_files_ctl(self):
         file_list = self.minio_client.list_files(self.file_path)
         ctl_list = [ctl for ctl in file_list if ctl.split('.')[1] == 'ctl']
 
         if not ctl_list:
-            etl_mongo_logger.warning("No ctl file can be located, returnin None")
+            etl_mongo_logger.warning("No ctl file can be located, returning None")
             return None
 
         sorted_ctl = sorted(ctl_list, key=lambda filename: datetime.strptime(filename[-18:-4], '%Y%m%d%H%M%S'), reverse=True)
@@ -115,8 +118,9 @@ class ReadInputFiles:
         else:
             avr_schema = AvroFileOperations(self.file_config['AvroSchema'])
         #read_file = class_reader(file_schema)        
-        #return read_file.read_table(full_path)
+        #return read_file.read_table(full_path
         file_read = self.minio_client.read_file(path=self.file_name, file_type=self.file_type, avro_schema=avr_schema)
+        return file_read
     
     def __repr__(self) -> str:
         f'Data reader : instance of class for file {self.file_name}'

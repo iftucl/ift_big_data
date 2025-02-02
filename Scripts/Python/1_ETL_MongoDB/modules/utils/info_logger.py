@@ -8,4 +8,4 @@ Topic   : info_logger utils
 """
 from ift_global.utils.logger import IFTLogger
 
-etl_mongo_logger = IFTLogger(app_name="big_data", service_name="etl_mongodb")
+etl_mongo_logger = IFTLogger(app_name="big_data", service_name="etl_mongodb", log_level="info")

@@ -108,7 +108,7 @@ class ReadInputFiles:
         else:
             raise TypeError('Not implemented write output format ')
 
-    def read_dictionary(self):        
+    def read_dictionary(self) -> list[dict]:        
         class_reader = self._select_read_class(self.file_type)
         file_schema = self._set_file_schema(self.file_type)
         if not self.file_path:

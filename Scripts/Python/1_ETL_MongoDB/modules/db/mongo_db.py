@@ -11,7 +11,7 @@ Desc    : Class to load data into MongoDB
 """
 from ift_global import MinioFileSystemRepo
 from pymongo import MongoClient
-import datetime
+from datetime import datetime
 
 from modules.input.read_file import ReadInputFiles
 
@@ -24,7 +24,7 @@ class LoadMongo(ReadInputFiles):
     def _format_mongo_fields(self, mongo_dictionary):
 
         for mongo_entry in mongo_dictionary:
-            mongo_entry['DateTime'] = datetime.datetime.strptime(mongo_entry['DateTime'], '%Y-%m-%dT%H:%M:%S.000Z')
+            mongo_entry['DateTime'] = datetime.strptime(mongo_entry['DateTime'], '%Y-%m-%d %H:%M:%S%z')
             mongo_entry['Quantity'] = float(mongo_entry['Quantity'])
             mongo_entry['Notional'] = float(mongo_entry['Notional'])
         
@@ -41,7 +41,7 @@ class LoadMongo(ReadInputFiles):
         #file_name = get_trades.get_latest_input_file(self)
         data_load_noformat = self.read_dictionary()
 
-        if data_load_noformat is None:
+        if not data_load_noformat:
             return None
 
         data_load = self._format_mongo_fields(data_load_noformat)

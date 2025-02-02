@@ -80,7 +80,8 @@ class WriteOutputFile:
             print(f'Error writing to {self.file_type} file')
     def write_output_minio(self, output_data: list, file_type: str = "csv"):
         try:
-            self.minio_client.write_file(path=self.full_path, output_data=[x.model_dump() for x in output_data], file_type=file_type)            
+            self.minio_client.write_file(path=self.full_path, output_data=[x.model_dump() for x in output_data], file_type=file_type)
+            self.minio_client.write_file(path=self.full_path.replace(file_type, "ctl"), output_data=[{"": ""},], file_type="csv")            
         except IOError as iexc:
             print(f'Error writing to {self.file_type} file to Minio')
             print(iexc)

@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "1-etl-mongodb"
+version = "0.1.0"
+description = "Reads Trades from Minio bucket and loads to mongodb"
+authors = ["uceslc0 <uceslc0@ucl.ac.uk>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+ift-global = {git = "https://github.com/iftucl/ift_global.git"}
+pymongo = "^4.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

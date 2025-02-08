@@ -73,6 +73,6 @@ __pycache__
 # volumes folders docker
 
 postgres-data/
-
+redis_data/
 # poetry
 *.lock

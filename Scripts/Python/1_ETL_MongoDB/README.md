@@ -9,13 +9,29 @@ Input folder to database specifications:
 - minio folder: ''
 - mongodb: Database = Trades; Collection = TradingRecord
 
+
+<p align="center">
+    <a href=""><img src="../../../assets/img/minio_mongodb_redis.png" alt="BigData-IFT"></a>
+</p>
+
+
 ## Depends on
 
-To run this script you will need to start `MongoDB` and `Minio` containers:
+To run this script you will need to start `MongoDB`, `Minio` and `Redis` containers.
+
+If you haven't yet build these containers, then:
 
 ```bash
 
-docker compose up minio mongodb -d
+docker compose up minio mongodb redis -d
+
+```
+
+else, if the containers are already build, then:
+
+```bash
+
+docker compose start minio mongodb redis -d
 
 ```
 
@@ -27,8 +43,8 @@ configuration file is stored in properties/conf.yaml. The configurations can be 
 
 in order to trigger this script:
 
-```
-cd ./Scripts/Python/5.Lecture_20221113/ETLMongoDB
-poetry run python Main.py --env_type='dev'
+```bash
+cd ./Scripts/Python/1_ETL_MongoDB
+poetry run python main.py --env_type='dev'
 
 ```

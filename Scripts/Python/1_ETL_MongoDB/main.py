@@ -38,4 +38,4 @@ if __name__ == '__main__':
                              log_file='./static/file_load_logger.txt')    
     mongo_loader.get_latest_input_file()
     mongo_loader.load_mongo_data()
-    etl_mongo_logger.info('Script completed')    
+    etl_mongo_logger.info('Script completed')

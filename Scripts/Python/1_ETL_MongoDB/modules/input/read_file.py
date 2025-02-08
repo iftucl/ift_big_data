@@ -17,6 +17,7 @@ from ift_global import MinioFileSystemRepo
 
 from modules.utils.info_logger import etl_mongo_logger
 from modules.data_models.trade_model import Trade
+from modules.db.redis_manager import is_file_processed, mark_file_as_processed
 from modules.input.avro_input import AvroFileOperations
 from modules.input.csv_input import CsvFileOperations
 from modules.input.parquet_input import ParquetFileOperations
@@ -38,17 +39,31 @@ class ReadInputFiles:
 
     """
 
-    def __init__(self, file_config, log_file = './static/file_load_logger.txt'):
+    def __init__(self, file_config, log_file = './static/file_load_logger.txt', **kwargs):
         self.file_path = file_config['DataLake']
         self.log_file = log_file
         self.file_config = file_config
         self.file_name, self.file_type = self.get_latest_input_file()
+        self.redis_host = kwargs.get("REDIS_HOST")
+        self.redis_port = kwargs.get("REDIS_PORT")
     
     def _minio_client(self):
         return  MinioFileSystemRepo(bucket_name="iftbigdata")
     @property
     def minio_client(self):
         return self._minio_client()
+    @property
+    def file_already_read(self):
+        try:
+            return bool(self._redis_check_log_file())
+        except Exception:
+            return self._local_check_log_file()
+    @property
+    def log_file_processed(self):
+        try:
+            self._redis_write_log_file()
+        except Exception:
+            return self._local_write_log_file()
 
     def _get_input_files_ctl(self):
         file_list = self.minio_client.list_files(self.file_path)
@@ -60,20 +75,28 @@ class ReadInputFiles:
 
         sorted_ctl = sorted(ctl_list, key=lambda filename: datetime.strptime(filename[-18:-4], '%Y%m%d%H%M%S'), reverse=True)
         return sorted_ctl
-
-    def _write_log_file(self, file_name):        
+    
+    def _redis_check_log_file(self):
+        redis_resp = is_file_processed(self.file_name, host_name=self.redis_host, redis_port=self.redis_port)
+        return redis_resp
+    
+    def _redis_write_log_file(self):
+        _ = mark_file_as_processed(self.file_name, host_name=self.redis_host, redis_port=self.redis_port)
+        return True
+    
+    def _local_write_log_file(self, file_name):        
         with open('./static/file_load_logger.txt', 'w') as f:
             f.write(file_name)
 
-    def _read_logged_file(self):
+    def _local_check_log_file(self):
         """reads logged files, if not exists returns mock-up"""
         if not os.path.exists(self.log_file):
             # creates mockup if not exists
-            return 'BondTrades_XXXXXXXXXXX.XYZ'
+            return 'EquityTrades_XXXXXXXXXXX.XYZ'
         
         with open(self.log_file) as f:
             lines = f.readlines()
-        return lines[0]
+        return lines[0] == self.file_name
 
     def get_latest_input_file(self):
         '''finds latest file with data and file type extension'''

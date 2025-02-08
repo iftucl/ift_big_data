@@ -9,6 +9,8 @@ readme = "README.md"
 python = "^3.10"
 ift-global = {git = "https://github.com/iftucl/ift_global.git"}
 pymongo = "^4.11"
+pytest = "^8.3.4"
+redis = "^5.2.1"
 
 
 [build-system]

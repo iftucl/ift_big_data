@@ -42,7 +42,7 @@ if __name__ == '__main__':
     database_client = DatabaseMethods(conf['config']['Database']['Postgres'], 'Postgres')
     etl_duckdb_logger.info(f'established db connection via sql client')    
     database_client.execute(ops_type='upsert', data_load=aggregated_trades)
-    print_info_log('Trades aggregation and upsert completed', 'progress')
+    etl_duckdb_logger.info('Trades aggregation and upsert completed', 'progress')
     database_client.execute(sql_statement="SELECT * FROM cash_equity.portfolio_positions", ops_type="read")
 
 

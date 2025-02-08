@@ -59,7 +59,7 @@ Run it locally as:
 ```python
 
 import os
-os.chdir("Scripts/Python/0_RandomTrades")
+os.chdir("Scripts/Python/3_ETL_Duckdb_Postgres")
 
 ```
 

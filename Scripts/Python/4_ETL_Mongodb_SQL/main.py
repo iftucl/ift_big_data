@@ -11,8 +11,6 @@ Project : SQL Trades aggregator & uploader
 import datetime
 import time
 
-# import os
-# os.chdir('D:/LucaCocco/ucl/iftcode2022/Scripts/Python/1.Lecture_20221117/ETLSQLite/')
 
 from modules.utils.info_logger import print_info_log
 from modules.utils.args_parser import arg_parse_cmd

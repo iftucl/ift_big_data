@@ -34,8 +34,9 @@ COPY --chmod=770 --from=assets_jenkins . /home/.jenkins/
 
 # move all R scripts to Container
 COPY --chmod=770 ./Scripts/R/* /opt/apps/batched/R/
+COPY --chmod=770 ./Scripts/Python/* /opt/apps/batched/Python/
 
 # install all R packages
 # RUN R -e 'packToInst <- read.csv("/opt/apps/batched/R/requirements.txt"); lapply(packToInst$Packages, function(x) install.packages(x))'
-
+RUN python -m pip install poetry
 CMD pip3 -v

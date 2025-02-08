@@ -1,0 +1,52 @@
+dev:
+  config:
+    Directories:
+      SQLDataBase : '../../../../DataBases/DBs/DMOBondPrices/BondPrice.db'      
+    Database:
+      Mongo:
+        Collection: 'TradingRecord'
+        Db: 'Trades'
+        url: 'mongodb://localhost:27018'
+      Postgres:
+        Host: localhost
+        Database: fift
+        Username: postgres
+        Password: postgres
+        Port: 5438
+  params:
+    TradesParameters: 
+      tradersIds : ['JBX1566', 'DGR1983', 'DHB1075', 'SML1458','DMZ1796','MRH5231']
+      counterParty: ['GSL','JPM','CIT','SAN','BAR','MLI']
+      tradeQuantity: [-500,-1000,-2500,-5000,-7500,-10000,-20000,500,1000,2500,5000,7500,10000,15000,30000]
+      SimulationNumber: 100
+    OutputFile: 
+      DataLake : '../../../../DataBases/DBs/DataLake/Trades'
+      FileName: 'BondTrades_'
+      ColumnNames: ['DateTime','TradeId','Trader','ISIN','Quantity','Notional','TradeType','Ccy','Counterparty']
+      AvroSchema: './static/RNDTRADE.avsc'
+docker:
+  config:
+    Directories:
+      SQLDataBase : ''
+    Database:
+      Mongo:
+        Collection: 'TradingRecord'
+        Db: 'Trades'
+        url: 'mongodb://mongo_db:27017'
+      Postgres:
+        Host: localhost
+        Database: fift
+        Username: postgres
+        Password: postgres
+        Port: 5432
+  params:
+    TradesParameters: 
+      tradersIds : ['JBX1566', 'DGR1983', 'DHB1075', 'SML1458','DMZ1796','MRH5231']
+      counterParty: ['GSL','JPM','CIT','SAN','BAR','MLI']
+      tradeQuantity: [-500,-1000,-2500,-5000,-7500,-10000,-20000,500,1000,2500,5000,7500,10000,15000,30000]
+      SimulationNumber: 100
+    OutputFile: 
+      DataLake : '/home/DataLake/Trades'
+      FileName: 'BondTrades_'
+      ColumnNames: ['DateTime','TradeId','Trader','ISIN','Quantity','Notional','TradeType','Ccy','Counterparty']
+      AvroSchema: './static/RNDTRADE.avsc'

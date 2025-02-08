@@ -71,15 +71,7 @@ class GenerateTrades:
         random_price = float(random_instrument['close_price']) + random.uniform(-1.5, 1.5)
         notional = random_price * float(random_conf['quantity'])
         
-        trader_id = '{}{}{}{}'.format(
-            bs_short,
-            random_conf['trader'],
-            random_instrument['symbol_id'],
-            random_time['frmtmstp']
-        )
-        
         return Trade(DateTime = random_time['rtmstmp'], 
-                    TradeId = trader_id, 
                     Trader = random_conf['trader'],
                     Symbol = random_instrument['symbol_id'],
                     Quantity = random_conf['quantity'],

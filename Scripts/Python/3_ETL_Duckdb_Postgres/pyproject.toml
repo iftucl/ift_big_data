@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "3-etl-duckdb-postgres"
+version = "0.1.0"
+description = "\"ETL From minio to postgresql using duckdb\""
+authors = ["uceslc0 <uceslc0@ucl.ac.uk>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+ift-global = {git = "https://github.com/iftucl/ift_global.git"}
+avro = "^1.12.0"
+pyarrow = "^18.1.0"
+sqlalchemy = "^2.0.38"
+pydantic = "^2.10.6"
+duckdb = "^1.2.0"
+pandas = "^2.2.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

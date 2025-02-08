@@ -15,8 +15,7 @@ import os
 from datetime import datetime
 from ift_global import MinioFileSystemRepo
 
-from modules.utils.info_logger import etl_mongo_logger
-from modules.data_models.trade_model import Trade
+from modules.utils.info_logger import etl_duckdb_logger
 from modules.input.avro_input import AvroFileOperations
 from modules.input.csv_input import CsvFileOperations
 from modules.input.parquet_input import ParquetFileOperations
@@ -55,7 +54,7 @@ class ReadInputFiles:
         ctl_list = [ctl for ctl in file_list if ctl.split('.')[1] == 'ctl']
 
         if not ctl_list:
-            etl_mongo_logger.warning("No ctl file can be located, returning None")
+            etl_duckdb_logger.warning("No ctl file can be located, returning None")
             return None
 
         sorted_ctl = sorted(ctl_list, key=lambda filename: datetime.strptime(filename[-18:-4], '%Y%m%d%H%M%S'), reverse=True)
@@ -109,7 +108,7 @@ class ReadInputFiles:
         else:
             raise TypeError('Not implemented write output format ')
 
-    def read_dictionary(self) -> list[Trade]:        
+    def read_dictionary(self) -> list[dict]:        
         class_reader = self._select_read_class(self.file_type)
         file_schema = self._set_file_schema(self.file_type)
         if not self.file_path:
@@ -121,7 +120,7 @@ class ReadInputFiles:
         #read_file = class_reader(file_schema)        
         #return read_file.read_table(full_path
         file_read = self.minio_client.read_file(path=self.file_name, file_type=self.file_type, avro_schema=avr_schema)
-        return [Trade(**x) for x in file_read]
+        return file_read
     
     def __repr__(self) -> str:
         return f'Data reader : instance of class for file {self.file_name}'

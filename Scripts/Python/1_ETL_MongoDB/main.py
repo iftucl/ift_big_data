@@ -2,7 +2,7 @@
 
 UCL -- Institute of Finance & Technology
 Author  : Luca Cocconcelli
-Lecture : 2024-02-22
+Lecture : 2024-02-02
 Topic   : Main.py
 Project : MongoDB Trades uploader
 
@@ -19,7 +19,7 @@ from modules.db.mongo_db import LoadMongo
 
 
 if __name__ == '__main__':
-    etl_mongo_logger('Script started')
+    etl_mongo_logger.info('Script started')
     
     args = arg_parse_cmd()
     parsed_args = args.parse_args()    
@@ -32,10 +32,10 @@ if __name__ == '__main__':
                       env_file=True)
     # set_env_variables(env_variables=conf['config']['env_variables'], env_type="dev", env_file=True)
 
-    etl_mongo_logger('Command line argument parsed & main config loaded')
+    etl_mongo_logger.info('Command line argument parsed & main config loaded')
     mongo_loader = LoadMongo(mongo_config=conf['config']['Database']['Mongo'],
                              file_config=conf['params']['OutputFile'],
                              log_file='./static/file_load_logger.txt')    
     mongo_loader.get_latest_input_file()
     mongo_loader.load_mongo_data()
-    etl_mongo_logger('Script completed')    
+    etl_mongo_logger.info('Script completed')    

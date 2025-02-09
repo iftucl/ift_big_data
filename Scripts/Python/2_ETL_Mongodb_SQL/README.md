@@ -4,11 +4,14 @@ This script aggregates granular trades stored in MongoDB and transfer them into 
 To be more precise, we could almost call this process an ELT as the transformation (data aggregation) happens in the MongoDB server.
 
 
-
-
 ## Introduction
 
-Script to aggregate trades from MongoDB and load to SQLite.
+Script to aggregate trades from MongoDB and load to postgresql positions table.
+
+<p align="center">
+    <a href=""><img src="../../../assets/img/mongodb_postgres.png" alt="BigData-IFT"></a>
+</p>
+
 
 Input Mongo database to SQLite database specifications:
 

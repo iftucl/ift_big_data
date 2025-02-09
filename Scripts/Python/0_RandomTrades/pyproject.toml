@@ -2,9 +2,10 @@
 name = "0-randomtrades"
 version = "0.1.0"
 description = "Generates trades randomly"
-authors = ["Luca Cocconcelli"]
+authors = ["uceslc0"]
 license = "n"
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.10"

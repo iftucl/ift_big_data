@@ -31,8 +31,11 @@ This project welcomes contributions and suggestions. It is highly recommended to
 
 Please, use following workflow:
 
-+ Clone this repo ("git clone https://github.com/iftucl/ift_big_data.git")
-
++ Clone this repo 
+ 
+```bash
+git clone https://github.com/iftucl/ift_big_data.git
+```
 + cd into the repo directory by:
 
 ```

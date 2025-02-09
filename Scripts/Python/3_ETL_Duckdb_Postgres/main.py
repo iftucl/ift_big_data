@@ -32,18 +32,19 @@ if __name__ == '__main__':
                       env_type=parsed_args.env_type,
                       env_file=True)
     # set_env_variables(env_variables=conf['config']['env_variables'], env_type="dev", env_file=True)
-
     etl_duckdb_logger.info(f'Command line argument parsed & main config loaded')
+    # get latest file from MinIO
     input_trades = ReadInputFiles(file_config=conf['params']['OutputFile'], log_file='./static/file_load_logger.txt')
-    granular_trades = input_trades.read_dictionary()    
+    # read latest file from MinIO
+    granular_trades = input_trades.read_dictionary()
     etl_duckdb_logger.info(f'Trades read from : {input_trades.file_name}')
+    # aggreagate in-memory trades using DuckDB
     aggregated_trades = get_aggregated_trades(trades_list=granular_trades)
     etl_duckdb_logger.info(f'Trades {input_trades.file_name} aggregated using duckdb.')
+    # establish connection to postgres database
     database_client = DatabaseMethods(conf['config']['Database']['Postgres'], 'Postgres')
-    etl_duckdb_logger.info(f'established db connection via sql client')    
+    etl_duckdb_logger.info(f'established db connection via sql client')
+    # upsert trades to postgres db
     database_client.execute(ops_type='upsert', data_load=aggregated_trades)
     etl_duckdb_logger.info('Trades aggregation and upsert completed', 'progress')
-    database_client.execute(sql_statement="SELECT * FROM cash_equity.portfolio_positions", ops_type="read")
-
-
     etl_duckdb_logger.info('Duckdb aggregate script completed')    

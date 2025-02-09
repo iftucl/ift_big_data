@@ -2,8 +2,9 @@
 name = "3-etl-duckdb-postgres"
 version = "0.1.0"
 description = "\"ETL From minio to postgresql using duckdb\""
-authors = ["uceslc0 <uceslc0@ucl.ac.uk>"]
+authors = ["uceslc0"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.10"

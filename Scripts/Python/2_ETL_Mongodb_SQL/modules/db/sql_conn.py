@@ -3,9 +3,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.sql import text
 from sqlalchemy.dialects.postgresql import insert
 
-
-
-from modules.models.risk_positions import RiskPositions
+from modules.data_models.port_position_model import PortfolioPositions
 
 class DatabaseMethods:
     """
@@ -43,11 +41,11 @@ class DatabaseMethods:
             self.commit()
         self.connection.close()
 
-    def execute(self, sql_statement, ops_type, data_load=None):
+    def execute(self, ops_type, sql_statement=None, data_load=None):
         Session = scoped_session(self._conn)
-        s = Session()        
+        s = Session()
         if ops_type == 'upsert':
-            stmt = insert(RiskPositions).values(data_load)
+            stmt = insert(PortfolioPositions).values(data_load)
             stmt = stmt.on_conflict_do_update(
                 index_elements=['pos_id'],
                 set_= dict({
@@ -56,6 +54,7 @@ class DatabaseMethods:
                     })
                 )
             output =  s.execute(stmt)
+            s.commit()
             return output.is_insert
         elif ops_type == 'read':
             output =  s.execute(text(sql_statement))
@@ -92,6 +91,3 @@ class DatabaseMethods:
             return sessionmaker(bind=engine, autocommit=False, autoflush=False)
         else:
             raise exc.ArgumentError('Only two values are expected for db_type: postgres or sqlite')
-
-        
-

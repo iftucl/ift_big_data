@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "1-etl-mongodb"
+name = "4-etl-mongodb-sql"
 version = "0.1.0"
-description = "Reads Trades from Minio bucket and loads to mongodb"
+description = ""
 authors = ["uceslc0"]
 readme = "README.md"
 package-mode = false
@@ -9,9 +9,8 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "^3.10"
 ift-global = {git = "https://github.com/iftucl/ift_global.git"}
+sqlalchemy = "^2.0.38"
 pymongo = "^4.11"
-pytest = "^8.3.4"
-redis = "^5.2.1"
 
 
 [build-system]

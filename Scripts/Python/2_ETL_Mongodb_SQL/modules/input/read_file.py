@@ -17,7 +17,7 @@ import os
 import csv
 from datetime import datetime
 
-from modules.utils.info_logger import print_info_log
+from modules.utils.info_logger import etl_postgres_logger
 
 class ReadInputFiles:
     """
@@ -63,7 +63,7 @@ class ReadInputFiles:
         file_name = self.get_latest_input_file()
         
         if file_name == self._read_logged_file():
-            print_info_log('logged file equal to current - data will not load to MongoDB', 'warning')
+            etl_postgres_logger.warning('logged file equal to current - data will not load to MongoDB', 'warning')
             return None
 
         file_path_csv = os.path.join(self.file_path, file_name)

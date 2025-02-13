@@ -2,9 +2,9 @@
 <project>
   <actions/>
   <description>This script triggers the SQLite update from MongoDB into SQLite:&#xd;
-/opt/apps/batched/Python/2_ETL_Mongodb_SQL&#xd;
+/opt/apps/batched/Python/3_ETL_Duckdb_Postgres&#xd;
 &#xd;
-to trigger the main.py script poetry run python command is used</description>
+to trigger the main.py script poetry run python</description>
   <keepDependencies>false</keepDependencies>
   <properties>
     <jenkins.model.BuildDiscarderProperty>
@@ -29,13 +29,13 @@ to trigger the main.py script poetry run python command is used</description>
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.tasks.Shell>
-      <command>cd /opt/apps/batched/Python/2_ETL_Mongodb_SQL
+      <command>cd /opt/apps/batched/Python/3_ETL_Duckdb_Postgres
 if [ ! -f "poetry.lock" ]; then
   echo "poetry.lock not found. Running 'poetry install'..."
   poetry install
 else
   echo "poetry.lock found. Skipping 'poetry install'."
-poetry run python main.py --date_run="2023-11-23"</command>
+poetry run python main.py --date_run='2023-11-23' --env_type='dev'</command>
       <configuredLocalRules/>
     </hudson.tasks.Shell>
   </builders>

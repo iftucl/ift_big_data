@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "6-ui-trades-app"
+version = "0.1.0"
+description = ""
+authors = ["uceslc0"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+starlette = "^0.45.3"
+ift-global = {git = "https://github.com/iftucl/ift_global.git"}
+fastapi = "^0.115.8"
+uvicorn = "^0.34.0"
+shiny = "^1.2.1"
+shinywidgets = "^0.5.1"
+faicons = "^0.2.2"
+ipywidgets = "^8.1.5"
+itsdangerous = "^2.2.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

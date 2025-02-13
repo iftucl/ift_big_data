@@ -1,0 +1,12 @@
+local:
+  env_variables: ['SQ_APP', 'SQ_USER', 'SQ_HOST', 'SQ_PORT', 'SQ_PASSWORD', 'MINIO_USER', 'MINIO_PASSWORD', 'MINIO_URL', 'MINIO_BUCKET']
+  scarp_groups: ['ift', 'ift-admin', 'admin', 'ADMIN', 'ift-scarp-admin', 'ift-scarp-rw', 'ift-scarp-ro']
+  lambro:
+    lambro_endpoint: 'http://localhost:8010/'
+    lambro_group_mapping: {'ift-scarp-admin': 'ift-lambro-admin', 'ift-cly-rw': 'ift-lambro-rw', 'ift-cly-ro': 'ift-lambro-ro'}
+dev:
+  env_variables: ['SQ_APP', 'SQ_USER', 'SQ_HOST', 'SQ_PORT', 'SQ_PASSWORD', 'MINIO_USER', 'MINIO_PASSWORD', 'MINIO_URL', 'MINIO_BUCKET']
+  scarp_groups: [['ift', 'ift-admin', 'admin', 'ADMIN', 'ift-scarp-admin', 'ift-scarp-rw', 'ift-scarp-ro']]
+  lambro:
+    lambro_endpoint: 'http://ift-lambro-loim-app/'
+    lambro_group_mapping: {'ift-cly-admin': 'ift-lambro-admin', 'ift-cly-rw': 'ift-lambro-rw', 'ift-cly-ro': 'ift-lambro-ro'}

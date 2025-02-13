@@ -2,9 +2,9 @@
 <project>
   <actions/>
   <description>This script triggers the Random Trades generator in:&#xd;
-/opt/apps/R/batched/1.Lecture_20211110/TradesGenerator&#xd;
+/opt/apps/Python/batched/0_TradesGenerator&#xd;
 &#xd;
-to trigger the Main.R script Rscript command is used in conjunction with 3 args working directory, config and params file</description>
+to trigger the main.py script poetry run command is used in conjunction with 3 args working directory, config and params file</description>
   <keepDependencies>false</keepDependencies>
   <properties>
     <jenkins.model.BuildDiscarderProperty>
@@ -29,8 +29,14 @@ to trigger the Main.R script Rscript command is used in conjunction with 3 args 
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.tasks.Shell>
-      <command>cd /opt/apps/batched/R/1.Lecture_20240222/TradesGenerator
-Rscript Main.R /opt/apps/batched/R/1.Lecture_20240222/TradesGenerator docker.config script.params</command>
+      <command>cd /opt/apps/batched/Python/0_RandomTrades
+if [ ! -f "poetry.lock" ]; then
+  echo "poetry.lock not found. Running 'poetry install'..."
+  poetry install
+else
+  echo "poetry.lock found. Skipping 'poetry install'."
+fi
+poetry run python main.py --date_run='2023-11-23' --env_type='dev' --output_file='csv'</command>
       <configuredLocalRules/>
     </hudson.tasks.Shell>
   </builders>

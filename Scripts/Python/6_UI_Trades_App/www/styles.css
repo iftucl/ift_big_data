@@ -1,0 +1,472 @@
+ody {
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    color: #333;
+}
+header {
+    background-color: #8a1047;
+    color: white;
+    padding: 20px 0;
+}
+
+.logo {
+    float: left;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+nav ul {
+    list-style-type: none;
+    display: flex;
+}
+
+nav ul li {
+    margin-left: 20px;
+    position: relative; /* Add this to ensure dropdown works */
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+}
+
+/* Dropdown Button */
+.dropdown {
+    position: relative;
+    display: inline-block;
+    text-decoration: none;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%; /* Ensure it appears below the button */
+    left: 0;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {
+    background-color: #ddd;
+}
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-content-lopta:hover .dropdown-content-submenu {
+    display: block;
+}
+
+/* Submenu */
+.dropdown-submenu {
+    position: relative;
+}
+
+/* Submenu Content (Hidden by Default) */
+.dropdown-content-submenu {
+    display: none;
+    position: absolute;
+    left: -180px; /* Adjust this to position the submenu to the left */
+    top: 0;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+a {
+color: #a11353;
+text-decoration: none;
+transition: 0.3s;
+}
+
+a:hover {
+color: #ac145a;
+text-decoration: none;
+}
+
+.hero {
+    background-color: #a11353;
+    color: white;
+    text-align: center;
+    padding: 100px 0;
+}
+
+.hero h1 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+}
+
+.cta-button {
+    display: inline-block;
+    background-color: #ac145a;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+}
+.content {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+footer {
+  background-color: #8a1047;
+  color: white;
+  text-align: center;
+  padding: 20px 0;
+  margin-top: auto;
+}
+.section-title {
+    text-align: center;
+    padding-bottom: 60px;
+    position: relative;
+}
+.section-title h2 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    position: relative;
+}
+.section-title h2:after {
+    content: "";
+    position: absolute;
+    display: block;
+    width: 50px;
+    height: 3px;
+    background: #ac145a;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+}
+.section-title p {
+    margin-bottom: 0;
+}
+.login-container {
+    max-width: 400px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.login-container h2 {
+    font-size: 24px;
+    color: #8a1047;
+    text-align: center;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.login-container h2:after {
+    content: "";
+    position: absolute;
+    display: block;
+    width: 50px;
+    height: 3px;
+    background: #ac145a;
+    left: 0;
+    right: 0;
+    bottom: -10px;
+    margin: auto;
+}
+
+.form-group {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.form-control {
+    width: 100%;
+    max-width: 300px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    color: #333;
+    text-align: center;
+}
+
+.form-control::placeholder {
+    color: #999;
+}
+
+.cta-button {
+    width: 100%;
+    max-width: 300px;
+    padding: 12px;
+    background-color: #a11353;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.cta-button:hover {
+    background-color: #ac145a;
+}
+
+.forgot-password {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.forgot-password a {
+    color: #a11353;
+    text-decoration: none;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.forgot-password a:hover {
+    color: #ac145a;
+}
+
+.form-control::placeholder {
+    color: #999;
+    opacity: 1; /* Firefox */
+}
+
+.form-control:-ms-input-placeholder { /* Internet Explorer 10-11 */
+    color: #999;
+}
+
+.form-control::-ms-input-placeholder { /* Microsoft Edge */
+    color: #999;
+}
+
+.footer-container {
+    background-color: #eae5e5;
+    color: #ffffff;
+    padding: 40px 20px;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.footer-section {
+    background-color: #eae5e5;
+    color: #ffffff;
+    padding: 40px 20px;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+    margin-bottom: 20px;
+}
+
+.footer-section h3 {
+    color: #2c4c64;
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+.footer-links, 
+.footer-info {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    display: flex; /* Use flexbox */
+    justify-content: center; /* Center the links horizontally */
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+.footer-table {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.footer-table a {
+    color: #ffffff;
+}
+
+.footer-table th, footer-table td {
+  border: none;
+  padding: 10px;
+  text-align: center;
+  color: #ffffff;
+  background-color:  #8a1047;
+}
+
+footer-table th, footer-table tr {
+  background-color:   #8a1047;
+}
+
+.footer-bottom {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid #8a1047;
+    justify-content: center; /* Center the links horizontally */
+    padding: 0;
+    margin: 0;
+}
+
+.footer-bottom h3 {
+    font-family: "Lyon Text Web", "Times New Roman";
+    color: #ffffff;
+    font-size: 18px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.footer-bottom p {
+    margin: 0;
+    font-size: 16px;
+    text-align: center;
+}
+
+.btn .btn-default {
+    border-radius: 12px;
+    color: #ffffff;
+    background-color: #8a1047;
+}
+
+.wrapper-error .error-box {
+    color: #ffffff;    
+}
+.error-box a {
+    color: #ffffff;    
+}
+.error-box a:hover {
+    color: #ac145a;    
+}
+.error-page {
+    background-color: #8a1047;
+}
+
+.sidebar {
+    background-color: #8a1047;
+}
+.sidebar-card {
+    color: #113d1d;
+    background-color: #D2C1B7;
+    font-weight: bold;
+    text-align: center;
+}
+.sidebar-card-row {
+    color: #113d1d;
+}
+.body-card-header {
+    color: #113d1d;
+    background-color: #D2C1B7;
+    font-weight: bold;    
+}
+
+table {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+td, th {
+  border: 1px solid #6b4c39;
+  padding: 8px;
+  font-size: 16px;
+}
+
+tr:nth-child(even) {
+  background-color: #ffffff;
+  color: #113d1d;
+}
+
+tr:nth-child(odd) {
+  background-color: #D2C1B7;
+  color: #113d1d;
+}
+
+.table tr:nth-child(even) {
+    background-color: #D2C1B7 !important;
+}
+  
+.table tr:nth-child(odd) {
+    background-color: #D2C1B7 !important;
+}
+  
+
+th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  color: #113d1d;
+  font-weight: bold;
+}
+
+hr {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1.5px solid #27ae60;  
+}
+
+tr {
+    background-color: #113d1d;
+    color: #D2C1B7;
+    text-align: center;
+}
+
+.dashboard-title {
+    color: #113d1d;
+    background-color: #D2C1B7;
+    font-weight: bold;
+    text-align: center;
+}
+
+.sidebar-main {
+    background-color: #8a1047;
+}
+
+.btn-confirm-shiny {
+    background-color: #27ae60; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+
+.btn-reject-shiny {
+    background-color: #b12140; /* red */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+.shiny-input-select {
+    color: #113d1d;
+    background-color: #f0eae6;
+    font-weight: bold;
+}

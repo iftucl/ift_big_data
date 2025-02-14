@@ -34,7 +34,8 @@ if [ ! -f "poetry.lock" ]; then
   echo "poetry.lock not found. Running 'poetry install'..."
   poetry install
 else
-  echo "poetry.lock found. Skipping 'poetry install'."
+  echo "poetry.lock found. Running 'poetry sync'..."
+  poetry sync
 poetry run python main.py --env_type='dev'
 </command>
       <configuredLocalRules/>

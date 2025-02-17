@@ -37,7 +37,18 @@ CREATE TABLE IF NOT EXISTS fift.cash_equity.portfolio_positions (
 );
 
 ALTER TABLE fift.cash_equity.portfolio_positions ALTER COLUMN pos_id TYPE VARCHAR(252);
-
+-- Company Statistics
+CREATE TABLE IF NOT EXISTS fift.cash_equity.company_statistics (
+    "symbol" VARCHAR(7),
+    "float_shares" FLOAT,
+    "outstanding_shares" FLOAT,
+    "book_value" FLOAT,
+	"enterprise_revenue" FLOAT,
+	"enterprise_ebitda" FLOAT NOT NULL,
+	"start_date" DATE NOT NULL,
+	"end_date" DATE, 
+	"entry_id" VARCHAR(16) PRIMARY KEY
+);
 -- Exchange Rates
 CREATE TABLE IF NOT EXISTS fift.cash_equity.exchange_rates (
 	"from_currency"	CHAR(3) NOT NULL,
@@ -47,8 +58,6 @@ CREATE TABLE IF NOT EXISTS fift.cash_equity.exchange_rates (
 	"fx_id" TEXT NOT NULL,	
 	PRIMARY KEY("fx_id")
 );
-
-
 -- trader limits
 CREATE TABLE IF NOT EXISTS fift.cash_equity.trader_limits (
 	"limit_id" TEXT PRIMARY KEY,
@@ -60,7 +69,6 @@ CREATE TABLE IF NOT EXISTS fift.cash_equity.trader_limits (
     "limit_start" DATE NOT NULL,
     "limit_end" DATE
 );
-
 -- Trader Static
 CREATE TABLE IF NOT EXISTS fift.cash_equity.trader_static (
     "trader_id" CHAR(7) PRIMARY KEY,

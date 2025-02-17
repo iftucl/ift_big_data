@@ -16,9 +16,19 @@ configuration file is stored in properties/conf.yaml. The configurations can be 
 
 To run this script you will need to start `postgres_db` and `minio` containers:
 
+If you haven't build the containers yet,
+
 ```bash
 
 docker compose up minio postgres_db -d
+
+```
+
+else
+
+```bash
+
+docker compose start minio postgres_db -d
 
 ```
 

@@ -33,6 +33,9 @@ CMD psql -d 'postgres://postgres:postgres@postgres_db:5432' -a -f /home/${USER_I
 	&& sqlite3 -header -csv /home/${USER_ID}/Equity.db "select * from equity_prices;" > /home/equity_prices.csv \	
 	&& chmod 777 /home/equity_prices.csv \	
 	&& psql -c "\copy cash_equity.equity_prices FROM /home/equity_prices.csv WITH csv HEADER;" -d 'postgres://postgres:postgres@postgres_db:5432/fift' \    
+	&& sqlite3 -header -csv /home/${USER_ID}/Equity.db "select * from company_statistics;" > /home/company_statistics.csv \	
+	&& chmod 777 /home/company_statistics.csv \	
+	&& psql -c "\copy cash_equity.company_statistics FROM /home/company_statistics.csv WITH csv HEADER;" -d 'postgres://postgres:postgres@postgres_db:5432/fift' \    
 	&& sqlite3 -header -csv /home/${USER_ID}/Equity.db "select * from exchange_rates;" > /home/exchange_rates.csv \
 	&& chmod 777 /home/exchange_rates.csv \
 	&& psql -c "TRUNCATE cash_equity.exchange_rates;" -d 'postgres://postgres:postgres@postgres_db:5432/fift'\

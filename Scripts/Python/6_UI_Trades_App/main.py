@@ -42,18 +42,18 @@ app = Starlette(
 
 if __name__ == "__main__":
     try:
-        clyde_env = os.environ["scarp_ENV"]
+        scarp_env = os.environ["SCARP_ENV"]
     except KeyError:
-        scarp_logger.warning(f"On start-up, 'scarp_ENV' env variable is not set. Defaulting to local env")    
-        os.environ["scarp_ENV"] = "local"
-        clyde_env = "local"
+        scarp_logger.warning(f"On start-up, 'SCARP_ENV' env variable is not set. Defaulting to local env")    
+        os.environ["SCARP_ENV"] = "local"
+        scarp_env = "local"
 
-    clyde_config = ReadConfig(env_type=clyde_env)
-    if clyde_env == "local":
-        set_env_variables(clyde_config['env_variables'], 
-                          env_type=clyde_env, env_file=True, env_file_path='./')
+    scarp_config = ReadConfig(env_type=scarp_env)
+    if scarp_env == "local":
+        set_env_variables(scarp_config['env_variables'], 
+                          env_type=scarp_env, env_file=True, env_file_path='./')
     else:
-        set_env_variables(clyde_config['env_variables'], env_type=clyde_env)
+        set_env_variables(scarp_config['env_variables'], env_type=scarp_env)
 
     available_groups = set(scarp_config['scarp_groups'])
 

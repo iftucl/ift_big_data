@@ -46,5 +46,5 @@ if __name__ == '__main__':
     etl_duckdb_logger.info(f'established db connection via sql client')
     # upsert trades to postgres db
     database_client.execute(ops_type='upsert', data_load=aggregated_trades)
-    etl_duckdb_logger.info('Trades aggregation and upsert completed', 'progress')
+    etl_duckdb_logger.info('Trades aggregation and upsert completed')
     etl_duckdb_logger.info('Duckdb aggregate script completed')    

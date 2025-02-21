@@ -1,5 +1,6 @@
 dev:
   config:
+    env_variables: ['MINIO_USER', 'MINIO_PASSWORD', 'MINIO_URL']
     Directories:
       SQLDataBase : '../../../../DataBases/DBs/DMOBondPrices/BondPrice.db'      
     Database:
@@ -26,6 +27,7 @@ dev:
       AvroSchema: './static/RNDTRADE.avsc'
 docker:
   config:
+    env_variables: ['MINIO_USER', 'MINIO_PASSWORD', 'MINIO_URL']
     Directories:
       SQLDataBase : ''
     Database:

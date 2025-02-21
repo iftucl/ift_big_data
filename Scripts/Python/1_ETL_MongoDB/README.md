@@ -23,7 +23,7 @@ If you haven't yet build these containers, then:
 
 ```bash
 
-docker compose up minio mongodb redis -d
+docker compose up minio mongo_db redis -d
 
 ```
 
@@ -31,7 +31,7 @@ else, if the containers are already build, then:
 
 ```bash
 
-docker compose start minio mongodb redis -d
+docker compose start minio mongo_db redis
 
 ```
 

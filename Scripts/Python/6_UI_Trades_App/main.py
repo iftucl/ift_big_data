@@ -31,7 +31,7 @@ app = Starlette(
     ],
     middleware=[
         Middleware(TrustedHostMiddleware, allowed_hosts=["*"]),
-        Middleware(SessionMiddleware, secret_key=os.getenv("scarp_TOKEN_SECRET", "")),
+        Middleware(SessionMiddleware, secret_key=os.getenv("SCARP_TOKEN_SECRET", "")),
         Middleware(AuthenticationMiddleware, backend=CustomAuthBackend()),
         Middleware(CheckPermissionsMiddleware),
         Middleware(ExceptionMiddleware),

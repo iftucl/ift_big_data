@@ -36,7 +36,7 @@ if [ ! -f "poetry.lock" ]; then
 else
   echo "poetry.lock found. Running 'poetry sync'..."
   poetry sync
-poetry run python main.py --date_run='2023-11-23' --env_type='docker'</command>
+poetry run python main.py --date_run="2023-11-23" --env_type="dev"</command>
       <configuredLocalRules/>
     </hudson.tasks.Shell>
   </builders>

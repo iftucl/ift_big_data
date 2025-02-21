@@ -40,7 +40,7 @@ configuration file is stored in properties/conf.yaml. The configurations can be 
 in order to trigger this script:
 
 ```bash
-cd ./Scripts/Python/4_ETL_Mongob_SQL
-poetry run python main.py --date_run 2023-11-23
+cd ./Scripts/Python/2_ETL_Mongodb_SQL
+poetry run python main.py --date_run="2023-11-23" --env_type="dev"
 
 ```

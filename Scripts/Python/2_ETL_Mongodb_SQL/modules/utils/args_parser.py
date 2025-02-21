@@ -6,9 +6,9 @@ def arg_parse_cmd():
         description = 'MongoDB Data Loader'
     )
     parser.add_argument(
-        '--environment',
+        '--env_type',
         type=str,
-        required=False,
+        required=True,
         choices=['dev','docker'],
         help='Name of the environment on which you would like to run the code'
     )

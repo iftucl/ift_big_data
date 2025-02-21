@@ -69,7 +69,7 @@ class GetMongo:
                 '_id': 
                     {
                     'Trader': "$Trader",
-                    'ISIN': '$ISIN'
+                    'Symbol': '$Symbol'
                     }, 
 				'NetNotional': {'$sum': "$Notional"},
 				'NetQuantity':  {'$sum': "$Quantity"}
@@ -97,12 +97,12 @@ class GetMongo:
         list_output = []
         
         for dict in data_load:
-            date_id = bus_date.replace('-', '') + dict['_id']['Trader'] + dict['_id']['ISIN']
-            list_output.append({                
+            date_id = bus_date.replace('-', '') + dict['_id']['Trader'] + dict['_id']['Symbol']
+            list_output.append({
                 'cob_date': bus_date,
                 'pos_id': date_id,
                 'trader': dict['_id']['Trader'], 
-                'isin': dict['_id']['ISIN'], 
+                'symbol': dict['_id']['Symbol'], 
                 'ccy': 'GBP',
                 'net_amount': dict['NetNotional'],
                 'net_quantity': dict['NetQuantity']

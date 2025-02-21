@@ -28,7 +28,7 @@ else
 
 ```bash
 
-docker compose start minio postgres_db -d
+docker compose start minio postgres_db
 
 ```
 

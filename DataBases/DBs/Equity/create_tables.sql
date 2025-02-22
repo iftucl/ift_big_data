@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS fift.cash_equity.company_statistics (
     "outstanding_shares" FLOAT,
     "book_value" FLOAT,
 	"enterprise_revenue" FLOAT,
-	"enterprise_ebitda" FLOAT NOT NULL,
+	"enterprise_ebitda" FLOAT,
 	"start_date" DATE NOT NULL,
 	"end_date" DATE, 
 	"entry_id" VARCHAR(16) PRIMARY KEY

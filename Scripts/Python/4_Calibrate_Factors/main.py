@@ -18,7 +18,11 @@ import time
 from modules.utils.local_logger import calibration_logger
 from modules.db_ops.ift_sql import DatabaseMethods
 from modules.market_factors.sector_calibration import get_distribution_params
+from modules.market_factors.equity_var import calculate_parametric_var
 
+
+conf = ReadConfig("dev")
+set_env_variables(env_variables=conf['config']['env_variables'], env_type="dev", env_file=True)
 
 database_methods = DatabaseMethods(db_type="postgres")
 
@@ -41,4 +45,14 @@ result.all()
 
 sector_ret_dist = get_distribution_params(start_date="2023-11-02", end_date="2023-11-09", group_type="gics_sector")
 
+with DatabaseMethods('postgres',username="postgres", password="postgres", host="localhost", port="5438", database="fift") as db:
+    try:
+        # Create a session and execute a query
+        session = db.session
+        static_results = session.execute(text("""SELECT * FROM cash_equity.equity_static"""))
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        raise
 
+
+static_results.all()

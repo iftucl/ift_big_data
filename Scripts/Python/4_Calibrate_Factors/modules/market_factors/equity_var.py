@@ -7,7 +7,8 @@ def calculate_var(price_data: List[Tuple[datetime, float]],
                   holding_period: int = 1, 
                   confidence_level: float = 0.95, 
                   scaling_function: Optional[Callable[[np.ndarray, int], np.ndarray]] = None,
-                  var_type: Optional[Literal["parametric", "nonparametric"]] = "nonparametric") -> float:
+                  var_type: Optional[Literal["parametric", "nonparametric"]] = "nonparametric",
+                  use_squared_returns: bool = False) -> float:
     """
     Calculate Value at Risk (VaR) for a given time series of equity prices.
 
@@ -54,7 +55,7 @@ def calculate_var(price_data: List[Tuple[datetime, float]],
     prices = np.array(prices)
     
     # Calculate returns based on holding period
-    returns = calculate_returns(prices, holding_period)
+    returns = calculate_returns(prices, holding_period, use_squared=use_squared_returns)
     
     # Scale returns if scaling function is provided
     if scaling_function is not None:
@@ -65,22 +66,31 @@ def calculate_var(price_data: List[Tuple[datetime, float]],
         var = calculate_nonparametric_var(returns, confidence_level)
         return var
     
-    var = calculate_parametric_var(returns, confidence_level)
+    var = calculate_parametric_var(returns, confidence_level, use_squared=use_squared_returns)
     return var
 
-def calculate_returns(prices: np.ndarray, holding_period: int) -> np.ndarray:
+def calculate_returns(prices: np.ndarray, holding_period: int, use_squared: bool = False) -> np.ndarray:
     """
     Calculate returns based on the specified holding period.
+
+    This function calculates returns for an array of prices. It provides with the option of calculation the 
+    returns a squared return (:math:`{x}^2`).
     
     Args:
-    prices (np.ndarray): Array of prices
-    holding_period (int): Number of days for the holding period
-    
-    Returns:
-    np.ndarray: Calculated returns
+    -----
+    :param prices: Array of prices
+    :type prices: np.ndarray
+    :param holding_period: Holding period in days. This will calculate the returns over 1,2,3,... days holding period.
+    :type holding_period: int
+    :param use_squared: Whether we are using squared returns or normal returns. Defaults to False.
+    :type use_squared: bool
+    :return: Calculated returns
+    :rtype: np.ndarray
     """
-    
-    return np.log(prices[holding_period:]) - np.log(prices[:-holding_period])
+    simple_returns = np.log(prices[holding_period:]) - np.log(prices[:-holding_period])
+    if use_squared:
+        return simple_returns ** 2    
+    return simple_returns
 
 def ewma_scaling(returns: np.ndarray, holding_period: int, lambda_: float = 0.94) -> np.ndarray:
     """
@@ -100,7 +110,7 @@ def ewma_scaling(returns: np.ndarray, holding_period: int, lambda_: float = 0.94
     
     return returns * weights * np.sqrt(holding_period)
 
-def calculate_parametric_var(returns: np.ndarray, confidence_level: float) -> float:
+def calculate_parametric_var(returns: np.ndarray, confidence_level: float, use_squared: bool = False) -> float:
     """
     Calculate Parametric Value at Risk (VaR) from returns.
 
@@ -111,6 +121,8 @@ def calculate_parametric_var(returns: np.ndarray, confidence_level: float) -> fl
     :type returns: numpy.ndarray
     :param confidence_level: Confidence level for VaR calculation
     :type confidence_level: float
+    :param use_squared: Whether we are using squared returns or normal returns. Defaults to False.
+    :type use_squared: bool
     :return: Calculated Value at Risk
     :rtype: float
 
@@ -131,6 +143,9 @@ def calculate_parametric_var(returns: np.ndarray, confidence_level: float) -> fl
     >>> print(f"95% Parametric VaR: {var:.4f}")
     95% Parametric VaR: 0.0382
     """
+    if use_squared:
+        mean = np.mean(returns)
+        std_dev = np.sqrt(mean)  # For squared returns, std_dev is sqrt of mean    
     # Calculate the standard deviation of returns
     std_dev = np.std(returns)    
     # Calculate the z-score for the given confidence level

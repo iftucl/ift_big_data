@@ -1,5 +1,30 @@
 import numpy as np
 from scipy import stats
+from typing import List, Tuple
+
+
+def calculate_market_cap_factors(company_data: List[Tuple[str, float]]) -> dict:
+    """
+    Calculate market cap factors for a list of companies and map them back to symbols.
+
+    :param company_data: List of tuples containing (company symbol, market cap)
+    :return: Dictionary mapping company symbols to their calculated factors
+    :example:
+        >>> from modules.input_data.get_input_market_cap import get_market_cap
+        >>> mcap_data = get_market_cap("2023-11-09")
+        >>> company_data = [(x[0], x[7]) for x in mcap_data if x[7]]
+        >>> mcap_factor = calculate_market_cap_factors(company_data)
+    """
+    # Separate symbols and market caps
+    symbols, market_caps = zip(*company_data)
+    market_caps = np.array(market_caps)
+
+    # Calculate factors using the original function
+    factors = calculate_market_cap_factor(market_caps)
+
+    # Map factors back to symbols
+    return dict(zip(symbols, factors))
+
 
 def calculate_market_cap_factor(market_caps: np.ndarray) -> np.ndarray:
     """

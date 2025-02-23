@@ -6,7 +6,18 @@ from modules.utils.local_logger import calibration_logger
 
 
 def get_postgres_data(sql_query: str, **kwargs):
-    pg_config = PostgresConfig(**kwargs)
+    """
+    Get postgres data given a text query.
+
+    :param: sql_query: text query like "SELECT * FROM equity_static"    
+    """
+    print(kwargs)
+    pg_config = PostgresConfig(username=kwargs.get("username"),
+                               password=kwargs.get("password"),
+                               host=kwargs.get("host"),
+                               port=kwargs.get("port"),
+                               database=kwargs.get("database"))
+    print(pg_config)
     with DatabaseMethods("postgres",
                          username=pg_config.username,
                          password=pg_config.password,

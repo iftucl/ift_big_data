@@ -1,5 +1,5 @@
-from modules.db_ops.ift_sql import DatabaseMethods
-from modules.utils.local_logger import calibration_logger
+from modules.db_ops.extract_from_query import get_postgres_data
+
 
 sql_query = """SELECT ct.symbol, ct.float_shares, cs.region, cs.country, cs.gics_sector, ep.currency,
 (ep.close_price * ex.exchange_rate) AS px_usd,
@@ -10,12 +10,18 @@ LEFT JOIN cash_equity.exchange_rates ex ON ep.currency = ex.from_currency AND ex
 WHERE ct.float_shares IS NOT NULL"""
 
 
-def get_market_cap(cob_date: str):
+def get_market_cap(cob_date: str, database: str = "fift"):
+    """
+    Get market cap data for specific date.
+
+    :param: cob_date: string representation of cob date as 'YYYY-MM-DD'
+    :type: cob_date: str
+
+    :example:
+        >>> cob_date = "2023-11-09"
+    """
+    sql_query_fmt = sql_query.format(cob_date=cob_date)
+    mcap_data = get_postgres_data(sql_query=sql_query_fmt, database = database)
+    return mcap_data
     
-    with DatabaseMethods("postgres", username="postgres", password="postgres", host="localhost", port="5438", database="fift") as db:
-        try:
-            result = db.session.execute(text(sql_query_fmt))
-        except Exception as e:
-            calibration_logger.error(f"An error occurred: {e}")
-            raise
-    return result.all()
+company_data = [(x[0], x[7]) for x in mcap_data if x]

@@ -23,5 +23,3 @@ def get_market_cap(cob_date: str, database: str = "fift"):
     sql_query_fmt = sql_query.format(cob_date=cob_date)
     mcap_data = get_postgres_data(sql_query=sql_query_fmt, database = database)
     return mcap_data
-    
-company_data = [(x[0], x[7]) for x in mcap_data if x]

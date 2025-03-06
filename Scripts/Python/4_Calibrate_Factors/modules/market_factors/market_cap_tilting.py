@@ -2,6 +2,16 @@ import numpy as np
 from scipy import stats
 from typing import List, Tuple
 
+def tilt_weights(factor_list: list[dict], weights: None = None):
+
+    if not weights:
+        equal_weight = 1 / len(factor_list)
+        factor_weights = [{x: y, "weight": equal_weight, "factor_weight": equal_weight * y} for x, y in factor_list.items()]
+        total_weight = sum([x["factor_weight"] for x in factor_weights])
+        factor_final = [{**x, "tilted_weight": x["factor_weight"] / total_weight} for x in factor_weights]
+        sum([x["tilted_weight"] for x in factor_final])
+        
+
 
 def calculate_market_cap_factors(company_data: List[Tuple[str, float]]) -> dict:
     """
@@ -23,7 +33,8 @@ def calculate_market_cap_factors(company_data: List[Tuple[str, float]]) -> dict:
     factors = calculate_market_cap_factor(market_caps)
 
     # Map factors back to symbols
-    return dict(zip(symbols, factors))
+    factor_list = dict(zip(symbols, factors))
+    return factor_list
 
 
 def calculate_market_cap_factor(market_caps: np.ndarray) -> np.ndarray:

@@ -11,11 +11,12 @@ Project : SQL Trades aggregator & uploader
 from ift_global import ReadConfig
 from ift_global.utils.set_env_var import set_env_variables
 from sqlalchemy import text
+import os
 import datetime
 import time
 
 
-from modules.utils.local_logger import calibration_logger
+from modules.utils import calibration_logger, arg_parse_cmd, get_previous_business_dates
 from modules.db_ops.ift_sql import DatabaseMethods
 from modules.market_factors.sector_calibration import get_distribution_params
 from modules.market_factors.equity_var import calculate_parametric_var
@@ -43,7 +44,7 @@ with DatabaseMethods('postgres',username="postgres", password="postgres", host="
 
 result.all()
 
-sector_ret_dist = get_distribution_params(start_date="2023-11-02", end_date="2023-11-09", group_type="gics_sector")
+
 
 with DatabaseMethods('postgres',username="postgres", password="postgres", host="localhost", port="5438", database="fift") as db:
     try:
@@ -54,5 +55,20 @@ with DatabaseMethods('postgres',username="postgres", password="postgres", host="
         print(f"An error occurred: {e}")
         raise
 
-
-static_results.all()
+def main():
+    calibration_logger.info("Started Calibration of market risk factors")
+    args = arg_parse_cmd()
+    parsed_args = args.parse_args()
+    calibration_logger.info("Command Line argument parsed. Script running for {parsed_args.env_type} on date run {parsed_args.date_run}")
+    # example: conf = ReadConfig("dev")
+    conf = ReadConfig(parsed_args.env_type)
+    # sets environment var
+    set_env_variables(env_variables=conf['config']['env_variables'],
+                      env_type=parsed_args.env_type,
+                      env_file=True)
+    calibration_logger.info("Calculating distribution parameters for stocks returns on date run {parsed_args.date_run}")
+    sector_ret_dist = get_distribution_params(start_date=parsed_args.date_run,
+                                              end_date=get_previous_business_dates(start_date=parsed_args.date_run, look_back=10),
+                                              group_type="gics_sector",
+                                              holding_period=5)
+    static_results.all()

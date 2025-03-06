@@ -146,8 +146,10 @@ def calculate_parametric_var(returns: np.ndarray, confidence_level: float, use_s
     if use_squared:
         mean = np.mean(returns)
         std_dev = np.sqrt(mean)  # For squared returns, std_dev is sqrt of mean    
-    # Calculate the standard deviation of returns
-    std_dev = np.std(returns)    
+    else:
+        # Calculate the standard deviation of returns
+        mean = np.mean(returns)
+        std_dev = np.std(returns)    
     # Calculate the z-score for the given confidence level
     z_score = stats.norm.ppf(1 - confidence_level)    
     # Calculate VaR
@@ -156,7 +158,7 @@ def calculate_parametric_var(returns: np.ndarray, confidence_level: float, use_s
     return var
 
 def calculate_nonparametric_var(returns: np.ndarray, 
-                                confidence_level: float = 0.95, 
+                                confidence_level: float = 0.99, 
                                 holding_period: int = 1) -> float:
     """
     Calculate non-parametric Value at Risk using Historical Simulation method.
@@ -166,7 +168,7 @@ def calculate_nonparametric_var(returns: np.ndarray,
 
     :param returns: Array of historical returns
     :type returns: numpy.ndarray
-    :param confidence_level: Confidence level for VaR calculation, defaults to 0.95
+    :param confidence_level: Confidence level for VaR calculation, defaults to 0.99
     :type confidence_level: float, optional
     :param holding_period: Number of days for the holding period, defaults to 1
     :type holding_period: int, optional
@@ -202,27 +204,3 @@ def calculate_nonparametric_var(returns: np.ndarray,
     var_adjusted = var * np.sqrt(holding_period)
     
     return var_adjusted
-
-
-# Example usage:
-start_date = datetime(2025, 1, 1)
-price_data = [(start_date + timedelta(days=i), 100 + i) for i in range(100)]
-
-# Calculate VaR with different parameters
-var_95 = calculate_var(price_data)
-var_99 = calculate_var(price_data, confidence_level=0.99)
-var_2day = calculate_var(price_data, holding_period=2, confidence_level=0.975)
-var_ewma = calculate_var(price_data, holding_period=5, confidence_level=0.99, scaling_function=ewma_scaling)
-# Example usage:
-returns = np.array([0.02, -0.01, 0.03, -0.02, 0.01, -0.03, 0.02, -0.02, 0.01, -0.01])
-var_95 = calculate_nonparametric_var(returns, confidence_level=0.95, holding_period=1)
-var_99 = calculate_nonparametric_var(returns, confidence_level=0.99, holding_period=10)
-
-print(f"95% VaR (1-day holding period): {var_95:.4f}")
-print(f"99% VaR (10-day holding period): {var_99:.4f}")
-
-
-print(f"VaR (95% confidence, 1-day holding period): {var_95:.4f}")
-print(f"VaR (99% confidence, 1-day holding period): {var_99:.4f}")
-print(f"VaR (97.5% confidence, 2-day holding period): {var_2day:.4f}")
-print(f"VaR (99% confidence, 5-day holding period, EWMA scaling): {var_ewma:.4f}")

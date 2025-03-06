@@ -11,7 +11,6 @@ def get_postgres_data(sql_query: str, **kwargs):
 
     :param: sql_query: text query like "SELECT * FROM equity_static"    
     """
-    print(kwargs)
     pg_config = PostgresConfig(username=kwargs.get("username"),
                                password=kwargs.get("password"),
                                host=kwargs.get("host"),

@@ -25,9 +25,10 @@ def get_postgres_data(sql_query: str, **kwargs):
                          database=pg_config.database) as db:
         try:
             result = db.session.execute(text(sql_query))
+            return result.all()
         except Exception as e:
             calibration_logger.error(f"An error occurred: {e}")
             raise
-    return result.all()
+
 
 

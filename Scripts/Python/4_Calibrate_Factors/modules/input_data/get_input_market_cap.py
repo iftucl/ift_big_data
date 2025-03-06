@@ -10,7 +10,7 @@ LEFT JOIN cash_equity.exchange_rates ex ON ep.currency = ex.from_currency AND ex
 WHERE ct.float_shares IS NOT NULL"""
 
 
-def get_market_cap(cob_date: str, database: str = "fift"):
+def get_market_cap(cob_date: str, database: str = "fift", **kwargs):
     """
     Get market cap data for specific date.
 
@@ -21,5 +21,5 @@ def get_market_cap(cob_date: str, database: str = "fift"):
         >>> cob_date = "2023-11-09"
     """
     sql_query_fmt = sql_query.format(cob_date=cob_date)
-    mcap_data = get_postgres_data(sql_query=sql_query_fmt, database = database)
+    mcap_data = get_postgres_data(sql_query=sql_query_fmt, database = database, **kwargs)
     return mcap_data

@@ -1,5 +1,6 @@
 import redis
 import json
+import os
 
 from modules.utils.local_logger import calibration_logger
 # Connect to Redis
@@ -28,12 +29,13 @@ def store_company_params(company_id, params, **kwargs):
     #- create redis key for company
     key = f"company:{company_id}"
     # we store params as json
-    json_data = json.dumps(params)
+    json_data = json.dumps(params, default=str)
     
     if redis_client is None:
         raise ValueError(f"Failed to establish redis client connection. Quitting.")
     
-    redis_client.json().set(key, '$', json_data)
+    #redis_client.json().set(key, '$', json_data)
+    redis_client.execute_command('JSON.SET', key, '$', json_data)
 
 # Function to retrieve company parameters
 def get_company_params(company_id, **kwargs):
@@ -45,4 +47,5 @@ def get_company_params(company_id, **kwargs):
         return None
     key = f"company:{company_id}"
     json_data = redis_client.json().get(key)
+    
     return json.loads(json_data) if json_data else None

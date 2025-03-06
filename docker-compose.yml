@@ -203,7 +203,7 @@ services:
         - iceberg_rest
     # Redis Service
     redis:
-      image: redis:7.0-alpine
+      image: redis/redis-stack:latest
       container_name: redis_service
       ports:
         - "6379:6379" # Expose Redis on localhost for external access (optional)

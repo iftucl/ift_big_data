@@ -18,6 +18,7 @@ import time
 
 from modules.utils import calibration_logger, arg_parse_cmd, get_previous_business_dates
 from modules.db_ops.ift_sql import DatabaseMethods
+from modules.input_data.get_input_company_static import get_equity_static
 from modules.market_factors.sector_calibration import get_distribution_params
 from modules.market_factors.equity_var import calculate_parametric_var
 
@@ -45,7 +46,6 @@ with DatabaseMethods('postgres',username="postgres", password="postgres", host="
 result.all()
 
 
-
 with DatabaseMethods('postgres',username="postgres", password="postgres", host="localhost", port="5438", database="fift") as db:
     try:
         # Create a session and execute a query
@@ -71,4 +71,6 @@ def main():
                                               end_date=get_previous_business_dates(start_date=parsed_args.date_run, look_back=10),
                                               group_type="gics_sector",
                                               holding_period=5)
-    static_results.all()
+    calibration_logger.info("Fetching Company Statics...")
+    company_statics = get_equity_static(database="fift")
+    calibration_logger.info("Set output dictionaries for redis load...")

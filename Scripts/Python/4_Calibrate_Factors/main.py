@@ -2,58 +2,25 @@
 
 UCL -- Institute of Finance & Technology
 Author  : Luca Cocconcelli
-Lecture : 2024-02-21
+Lecture : 2025-02-21
 Topic   : Main.py
-Project : SQL Trades aggregator & uploader
+Project : Calibrate Market Data Parameters
 
 """
 
 from ift_global import ReadConfig
 from ift_global.utils.set_env_var import set_env_variables
-from sqlalchemy import text
 import os
-import datetime
-import time
 
 
 from modules.utils import calibration_logger, arg_parse_cmd, get_previous_business_dates
-from modules.db_ops.ift_sql import DatabaseMethods
 from modules.input_data.get_input_company_static import get_equity_static
+from modules.input_data.get_input_previous_close import get_previous_close_px
 from modules.market_factors.sector_calibration import get_distribution_params
 from modules.market_factors.equity_var import calculate_parametric_var
+from modules.output_data.load_redis_db import load_market_moves_redis
 
 
-conf = ReadConfig("dev")
-set_env_variables(env_variables=conf['config']['env_variables'], env_type="dev", env_file=True)
-
-database_methods = DatabaseMethods(db_type="postgres")
-
-with database_methods.session as s:
-    s.execute(text(""))
-
-with DatabaseMethods('postgres',username="postgres", password="postgres", host="localhost", port="5438", database="fift") as db:
-    try:
-        # Create a session and execute a query
-        session = db.session
-        result = session.execute(text("""SELECT ct.symbol, ct.float_shares, cs.region, cs.country, cs.gics_sector, ep.currency, (ep.close_price * ex.exchange_rate) AS usd_px FROM cash_equity.company_statistics ct
-                                         LEFT JOIN cash_equity.equity_static cs ON ct.symbol = cs.symbol
-                                         LEFT JOIN cash_equity.equity_prices ep ON ct.symbol = ep.symbol_id AND ep.cob_date = '2023-11-09'
-                                         LEFT JOIN cash_equity.exchange_rates ex ON ep.currency = ex.from_currency AND ex.cob_date = '2023-11-09' AND ex.to_currency = 'USD'
-                                         WHERE ep.close_price IS NOT NULL"""))
-    except Exception as e:
-        print(f"An error occurred: {e}")
-
-result.all()
-
-
-with DatabaseMethods('postgres',username="postgres", password="postgres", host="localhost", port="5438", database="fift") as db:
-    try:
-        # Create a session and execute a query
-        session = db.session
-        static_results = session.execute(text("""SELECT * FROM cash_equity.equity_static"""))
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        raise
 
 def main():
     calibration_logger.info("Started Calibration of market risk factors")
@@ -62,15 +29,24 @@ def main():
     calibration_logger.info("Command Line argument parsed. Script running for {parsed_args.env_type} on date run {parsed_args.date_run}")
     # example: conf = ReadConfig("dev")
     conf = ReadConfig(parsed_args.env_type)
-    # sets environment var
+    # sets environment var, example set_env_variables(env_variables=conf['config']['env_variables'], env_type="dev", env_file=True)
     set_env_variables(env_variables=conf['config']['env_variables'],
                       env_type=parsed_args.env_type,
                       env_file=True)
     calibration_logger.info("Calculating distribution parameters for stocks returns on date run {parsed_args.date_run}")
-    sector_ret_dist = get_distribution_params(start_date=parsed_args.date_run,
-                                              end_date=get_previous_business_dates(start_date=parsed_args.date_run, look_back=10),
+    date_run=parsed_args.date_run
+    # example date_run = "2023-11-23"
+    sector_ret_dist = get_distribution_params(start_date=date_run,
+                                              end_date=get_previous_business_dates(start_date=date_run, look_back=10),
                                               group_type="gics_sector",
                                               holding_period=5)
     calibration_logger.info("Fetching Company Statics...")
     company_statics = get_equity_static(database="fift")
+    calibration_logger.info("Fetching Last Close Price...")
+    price_close = get_previous_close_px(cob_date=date_run, database="fift")
     calibration_logger.info("Set output dictionaries for redis load...")
+    load_market_moves_redis(company_statics=company_statics, sector_ret_dist=sector_ret_dist, price_close=price_close)
+    calibration_logger.info("Script completed")
+
+if __name__ == '__main__':
+    main()

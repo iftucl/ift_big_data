@@ -8,7 +8,7 @@ class EquityStatic(BaseModel):
     sector_name: str  = Field(..., description="Sector name for this company")
     industry_name: str = Field(..., description="industry name for this company")
     country_id: str = Field(..., description="Country id as 'US'", min_length=2, max_length=2)
-    region_name: str = Field(..., description="Region for this company")
+    region_name: str = Field(..., description="Region for this company")    
     # validates notional
     @field_validator("company_id", mode="before")
     @classmethod

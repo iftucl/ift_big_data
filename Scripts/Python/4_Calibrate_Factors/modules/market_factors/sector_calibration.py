@@ -52,8 +52,8 @@ def get_distribution_params(start_date: str, end_date: str, group_type: Literal[
     Given a peer group, returns the average and standard deviation of return by holding period.
     """
     sql_query_fmt = sql_query.format(
-        business_date_pr=start_date,
-        business_date=end_date,
+        business_date_pr=end_date,
+        business_date=start_date,
         group_expression=group_type,
         hp=holding_period
     )

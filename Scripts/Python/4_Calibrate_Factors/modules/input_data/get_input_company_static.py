@@ -17,3 +17,4 @@ def get_equity_static(database: str = "fift", **kwargs):
                          industry_name=x[3],
                          country_id=x[4],
                          region_name=x[5]) for x in static_data]
+

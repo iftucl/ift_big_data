@@ -1,5 +1,5 @@
 -- create database
-CREATE DATABASE fift
+CREATE DATABASE IF NOT EXISTS fift
     WITH
     OWNER = postgres
     ENCODING = 'UTF8'

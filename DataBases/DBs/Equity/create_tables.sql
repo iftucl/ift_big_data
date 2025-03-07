@@ -23,11 +23,11 @@ CREATE TABLE IF NOT EXISTS fift.cash_equity.equity_prices (
 	"symbol_id"	VARCHAR(12)
 	
 );
-ALTER TABLE fift.cash_equity.equity_prices ALTER COLUMN price_id TYPE VARCHAR(252);
+--ALTER TABLE fift.cash_equity.equity_prices ALTER COLUMN price_id TYPE VARCHAR(252);
 
 -- Portfolio Positions
 CREATE TABLE IF NOT EXISTS fift.cash_equity.portfolio_positions (
-	"pos_id" TEXT PRIMARY KEY,
+	"pos_id" VARCHAR(252) PRIMARY KEY,
 	"cob_date"	DATE NOT NULL,
 	"trader"	CHAR(7) NOT NULL,
 	"symbol"	VARCHAR(12) NOT NULL,
@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS fift.cash_equity.portfolio_positions (
 	"net_amount"	NUMERIC NOT NULL
 );
 
-ALTER TABLE fift.cash_equity.portfolio_positions ALTER COLUMN pos_id TYPE VARCHAR(252);
+--ALTER TABLE fift.cash_equity.portfolio_positions ALTER COLUMN pos_id TYPE VARCHAR(252);
+
 -- Company Statistics
 CREATE TABLE IF NOT EXISTS fift.cash_equity.company_statistics (
     "symbol" VARCHAR(7),
@@ -44,7 +45,7 @@ CREATE TABLE IF NOT EXISTS fift.cash_equity.company_statistics (
     "outstanding_shares" FLOAT,
     "book_value" FLOAT,
 	"enterprise_revenue" FLOAT,
-	"enterprise_ebitda" FLOAT NOT NULL,
+	"enterprise_ebitda" FLOAT,
 	"start_date" DATE NOT NULL,
 	"end_date" DATE, 
 	"entry_id" VARCHAR(16) PRIMARY KEY

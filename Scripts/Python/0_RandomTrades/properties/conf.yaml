@@ -25,9 +25,9 @@ dev:
       FileName: 'EquityTrades_'
       ColumnNames: ['DateTime','TradeId','Trader','Symbol','Quantity','Notional','TradeType','Ccy','Counterparty']
       AvroSchema: './static/RNDTRADE.avsc'
-docker:
-  env_variables: ['MINIO_USER', 'MINIO_PASSWORD', 'MINIO_URL']
-  config:      
+docker:  
+  config:
+    env_variables: ['MINIO_USER', 'MINIO_PASSWORD', 'MINIO_URL']
     Database:
       Mongo:
         Collection: 'TradingRecord'

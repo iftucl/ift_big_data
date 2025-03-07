@@ -76,3 +76,4 @@ postgres-data/
 redis_data/
 # poetry
 *.lock
+local_test.py

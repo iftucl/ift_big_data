@@ -1,7 +1,7 @@
 from modules.db_ops.extract_from_query import get_postgres_data
 
 
-sql_query = """ SELECT symbol_id, close_price FROM cash_equity.equity_prices ep WHERE cob_date == '{business_date}'"""
+sql_query = """ SELECT symbol_id, close_price FROM cash_equity.equity_prices ep WHERE cob_date = '{cob_date}'"""
 
 
 def get_previous_close_px(cob_date: str, database: str = "fift", **kwargs):
@@ -16,4 +16,6 @@ def get_previous_close_px(cob_date: str, database: str = "fift", **kwargs):
     """
     sql_query_fmt = sql_query.format(cob_date=cob_date)
     price_data = get_postgres_data(sql_query=sql_query_fmt, database = database, **kwargs)
+    if price_data:
+        price_data = [(x[0].replace(" ",""), x[1]) for x in price_data]
     return price_data

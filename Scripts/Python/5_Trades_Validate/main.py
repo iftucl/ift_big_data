@@ -15,6 +15,7 @@ import os
 from modules.utils import trades_validate_logger, arg_parse_cmd
 from modules.input.read_file import ReadInputFiles
 from modules.analysis.regression_analysis import analyze_trades
+from modules.analysis.test_normal_distribution import test_trades_peers
 from modules.db.mongo_db import LoadMongo
 
 def main():
@@ -42,6 +43,6 @@ def main():
             analysis_results = analyze_trades(trades)
         else:
             # we fall back on the pre-calibrated params
-            analysis_results = test_trades(trades)
+            analysis_results = test_trades_peers(trades[0])
     mongo_loader = LoadMongo(mongo_config=conf['config']['Database']['Mongo'])    
     mongo_loader.load_mongo_data(analysis_results)

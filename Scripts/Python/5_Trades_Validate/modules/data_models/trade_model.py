@@ -2,8 +2,7 @@ from pydantic import BaseModel, Field, field_validator, ValidationInfo
 from datetime import datetime
 from typing import Literal
 from ift_global.utils.string_utils import trim_string
-from modules.utils.info_logger import etl_mongo_logger
-
+from modules.utils import trades_validate_logger
 class Trade(BaseModel):
     DateTime: datetime = Field(..., description="Timestamp of the trade")
     TradeId: str = Field(..., description="Unique trade identifier")
@@ -37,4 +36,4 @@ class Trade(BaseModel):
         try:
             return datetime.strptime(v, '%Y-%m-%d %H:%M:%S%z')
         except ValueError:            
-            etl_mongo_logger.error(f"Could not convert to datetime for time stamp: {v}")
+            trades_validate_logger.error(f"Could not convert to datetime for time stamp: {v}")

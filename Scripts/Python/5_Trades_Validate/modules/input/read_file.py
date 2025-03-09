@@ -15,6 +15,7 @@ import os
 from datetime import datetime
 from ift_global import MinioFileSystemRepo
 
+
 from modules.utils import trades_validate_logger
 from modules.data_models.trade_model import Trade
 from modules.db.redis_manager import is_file_processed, mark_file_as_processed

@@ -16,6 +16,7 @@ def get_postgres_data(sql_query: str, **kwargs):
                                host=kwargs.get("host"),
                                port=kwargs.get("port"),
                                database=kwargs.get("database"))
+
     with DatabaseMethods("postgres",
                          username=pg_config.username,
                          password=pg_config.password,

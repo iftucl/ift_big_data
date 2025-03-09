@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Literal
 from ift_global.utils.string_utils import trim_string
 from modules.utils import trades_validate_logger
+
 class Trade(BaseModel):
     DateTime: datetime = Field(..., description="Timestamp of the trade")
     TradeId: str = Field(..., description="Unique trade identifier")

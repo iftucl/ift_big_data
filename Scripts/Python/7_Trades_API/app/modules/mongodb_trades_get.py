@@ -89,3 +89,37 @@ class TradeInsert(GetMongoClient):
         elif isinstance(data_load, BaseModel):
             response = self.client.insert_one(data_load.model_dump())
         return response.acknowledged
+
+
+class TradeDelete(GetMongoClient):
+    """
+    Delete class for trade data. Inherits connectivity from GetMongoClient.
+
+    Deletes one record from the collection.
+
+    :param url: MongoDB connection URL.
+    :type url: str
+    :param database: Name of the MongoDB database.
+    :type database: str
+    :param collection: Name of the MongoDB collection.
+    :type collection: str
+
+    Methods:        
+        delete_trade: Delete a trade by TradeId.
+    """
+
+    def delete_trade(self, trade_id: str) -> str:
+        """
+        Delete a trade record by TradeId.
+
+        :param trade_id: The TradeId of the trade to delete.
+        :type trade_id: str
+        :return: A message indicating whether the deletion was successful or not.
+        :rtype: str
+        """
+        result = self.client.delete_one({"TradeId": trade_id})
+
+        if result.deleted_count == 0:
+            return f"No trade found with TradeId '{trade_id}'. Nothing was deleted."
+        
+        return f"Trade with TradeId '{trade_id}' was successfully deleted."

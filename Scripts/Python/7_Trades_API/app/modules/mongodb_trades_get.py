@@ -18,7 +18,7 @@ class TradeQuery(GetMongoClient):
         get_trades: Fetch trades with optional offset, limit, and regex search.
     """
 
-    def get_trades(self, offset: Optional[int] = None, limit: Optional[int] = None, search: Optional[str] = None) -> List[Dict[str, Any]]:
+    def get_trades(self, offset: Optional[int] = None, limit: Optional[int] = None, search: Optional[str] = None, match: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         Fetch trades from a MongoDB collection with optional offset, limit, and regex search.
 
@@ -34,7 +34,9 @@ class TradeQuery(GetMongoClient):
         # Build the query
         query = {}
         if search:
-            query["traderid"] = {"$regex": f"^{search}", "$options": "i"}  # Case-insensitive regex for 'traderid'
+            query["Trader"] = {"$regex": f"^{search}", "$options": "i"}
+        if match:
+            query["Trader"] = {"$eq": f"{match}"}
 
         # Create the cursor with the query
         cursor = self.client.find(query)

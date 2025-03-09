@@ -18,8 +18,16 @@ class Trade(BaseModel):
         title="Trade Response",
         description="A trade schema for trade response",
         json_schema_extra = {
-            "example": {
-                
+            "example":  {
+                "DateTime": "2023-11-23T08:01:08",
+                "TradeId": "BDGR1983PHNX.L20231123080108",
+                "Trader": "DGR1983",
+                "Symbol": "PHNX.L",
+                "Quantity": 30000,
+                "Notional": 185159.16172365914,
+                "TradeType": "BUY",
+                "Ccy": "GBP",
+                "Counterparty": "MLI"
             }
         }
 

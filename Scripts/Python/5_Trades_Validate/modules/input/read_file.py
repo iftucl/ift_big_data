@@ -15,7 +15,8 @@ import os
 from datetime import datetime
 from ift_global import MinioFileSystemRepo
 
-from modules.utils.local_logger import trades_validate
+
+from modules.utils import trades_validate_logger
 from modules.data_models.trade_model import Trade
 from modules.db.redis_manager import is_file_processed, mark_file_as_processed
 from modules.input.avro_input import AvroFileOperations
@@ -70,7 +71,7 @@ class ReadInputFiles:
         ctl_list = [ctl for ctl in file_list if ctl.split('.')[1] == 'ctl']
 
         if not ctl_list:
-            trades_validate.warning("No ctl file can be located, returning None")
+            trades_validate_logger.warning("No ctl file can be located, returning None")
             return None
 
         sorted_ctl = sorted(ctl_list, key=lambda filename: datetime.strptime(filename[-18:-4], '%Y%m%d%H%M%S'), reverse=True)

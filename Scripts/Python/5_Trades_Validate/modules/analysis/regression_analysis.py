@@ -4,6 +4,7 @@ from typing import List, Dict, Any
 from scipy import stats
 
 from modules.data_models.trade_model import Trade
+from modules.data_models.trade_suspect import TradeSuspect
 
 def prepare_data(trades: List[Trade]) -> List[Dict[str, float]]:
     """
@@ -54,13 +55,7 @@ def analyze_trades(trades: List[Trade]) -> Dict[str, Any]:
     for trade in trades:
         estimated_notional = estimate_notional(abs(trade.Quantity), beta, means)
         within_ci = is_within_confidence_interval(trade.Notional, estimated_notional, se)
-        results.append({
-            "trade_id": trade.TradeId,
-            "actual_notional": trade.Notional,
-            "estimated_notional": estimated_notional,
-            "within_confidence_interval": within_ci
-        })
-
+        results.append(TradeSuspect(**trade.model_dump(), ValidationLabel="Regression test against same trades", IsSuspect=not within_ci, ValidationTime=datetime.now(timezone.utc)))
     return {
         "beta": beta,
         "standard_error": se,

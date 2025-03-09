@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "5-trades-validate"
+version = "0.1.0"
+description = "Validates batch trades"
+authors = ["uceslc0"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+redis = "^5.2.1"
+pymongo = "^4.11.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

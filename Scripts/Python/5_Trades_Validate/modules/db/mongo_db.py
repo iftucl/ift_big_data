@@ -12,6 +12,7 @@ Desc    : Class to load data into MongoDB
 
 from pymongo import MongoClient
 from datetime import datetime
+from pydantic import BaseModel
 
 from modules.utils import trades_validate_logger
 from modules.input.read_file import ReadInputFiles
@@ -97,5 +98,8 @@ class LoadMongo:
             return None
         trades_validate_logger.warning(f"Loading Data into MongoDB")
         client_collection = self._init_mongo_client()
-        response = client_collection.insert_many([x.model_dump() for x in data_load])
+        if isinstance(data_load, list) or isinstance(data_load, tuple):
+            response = client_collection.insert_many([x.model_dump() for x in data_load])
+        elif isinstance(data_load, BaseModel):
+            response = client_collection.insert_one(data_load.model_dump())
         return response.acknowledged

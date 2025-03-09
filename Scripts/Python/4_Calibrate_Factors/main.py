@@ -45,7 +45,7 @@ def main():
     calibration_logger.info("Fetching Last Close Price...")
     price_close = get_previous_close_px(cob_date=date_run, database="fift")
     calibration_logger.info("Set output dictionaries for redis load...")
-    load_market_moves_redis(company_statics=company_statics, sector_ret_dist=sector_ret_dist, price_close=price_close)
+    load_market_moves_redis(company_statics=company_statics, sector_ret_dist=sector_ret_dist, close_price=price_close)
     calibration_logger.info("Script completed")
 
 if __name__ == '__main__':

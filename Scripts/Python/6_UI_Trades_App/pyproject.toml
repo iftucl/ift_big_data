@@ -17,6 +17,7 @@ shinywidgets = "^0.5.1"
 faicons = "^0.2.2"
 ipywidgets = "^8.1.5"
 itsdangerous = "^2.2.0"
+highcharts-core = "^1.10.3"
 
 
 [build-system]

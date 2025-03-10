@@ -1,10 +1,10 @@
 import uvicorn
-from app.server import app
 from ift_global import ReadConfig
 from ift_global.utils.set_env_var import set_env_variables
 import os
 
 from modules.utils.local_logger import lambro_logger
+from app.server import app
 
 try:
     lambro_env = os.environ["LAMBRO_ENV"]

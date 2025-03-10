@@ -1,8 +1,13 @@
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Literal
 from pydantic import BaseModel
 from modules.db_clients.mongodb_client import GetMongoClient
 
-from app.api_models.api_responses.trade_model import Trade
+from app.api_models.api_responses.trade_model import Trade, SuspectTrade
+
+pydantic_dict = {
+    "TradingRecord": Trade,
+    "SuspectTrades": SuspectTrade,
+}
 
 class TradeQuery(GetMongoClient):
     """
@@ -18,11 +23,16 @@ class TradeQuery(GetMongoClient):
     Methods:
         get_trades: Fetch trades with optional offset, limit, and regex search.
     """
+    def __init__(self, url: Optional[str] = None, database: Optional[str] = None, collection: Optional[str] = None):
+        super().__init__(url=url, database=database, collection=collection)
+        self.pydantic_model=pydantic_dict[self.mongo_collection]
 
-    def get_trades(self, offset: Optional[int] = None, limit: Optional[int] = None, search: Optional[str] = None, match: Optional[str] = None) -> List[Dict[str, Any]]:
+    def get_trades(self, query_field: Literal["Trader", "TradeId", "Symbol", "Counterparty"], offset: Optional[int] = None, limit: Optional[int] = None, search: Optional[str] = None, match: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         Fetch trades from a MongoDB collection with optional offset, limit, and regex search.
 
+        :param query_field: the field on which the search is performed
+        :type query_field: Literal
         :param offset: Number of records to skip (for pagination).
         :type offset: int, optional
         :param limit: Maximum number of records to return.
@@ -35,9 +45,9 @@ class TradeQuery(GetMongoClient):
         # Build the query
         query = {}
         if search:
-            query["Trader"] = {"$regex": f"^{search}", "$options": "i"}
+            query[query_field] = {"$regex": f"^{search}", "$options": "i"}
         if match:
-            query["Trader"] = {"$eq": f"{match}"}
+            query[query_field] = {"$eq": f"{match}"}
 
         # Create the cursor with the query
         cursor = self.client.find(query)
@@ -55,7 +65,7 @@ class TradeQuery(GetMongoClient):
 
         if not results:
             return list()
-        return [Trade(**x) for x in results]
+        return [self.pydantic_model(**x) for x in results]
     
     def get_trade_from_id(self, trade_id: Optional[str] = None, exact: Optional[bool] = True) -> List[Dict[str, Any]]:
         """
@@ -81,7 +91,7 @@ class TradeQuery(GetMongoClient):
 
         if not results:
             return list()
-        return [Trade(**x) for x in results]
+        return [self.pydantic_model(**x) for x in results]
 
 
 

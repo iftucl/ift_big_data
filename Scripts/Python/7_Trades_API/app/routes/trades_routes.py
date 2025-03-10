@@ -20,12 +20,23 @@ async def get_all_trades_endpoint(input_data: AllTradesRequest = Depends()) -> l
         return JSONResponse(status_code=status.HTTP_200_OK, content=[])
     return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(trades_output))
 
+@router.get("/trades/suspects", summary="Gets all suspect trades", description="Returns a full list of trade suspects")
+async def get_all_suspects_endpoint(input_data: AllTradesRequest = Depends()) -> list[Trade]:
+    lambro_logger.info(f"Executing request query to get all trade suspects in TradingRecord collection - start")
+    mongo_trades = TradeQuery(database="Trades", collection="SuspectTrades")
+    trades_output = mongo_trades.get_trades(limit=input_data.limit, query_field="Trader")
+    lambro_logger.info(f"Executing request query to get all trades in TradingRecord collection - completed")
+    if not trades_output:
+        return JSONResponse(status_code=status.HTTP_200_OK, content=[])
+    return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(trades_output))
+
+
 @router.get("/trades/{trader_id}", summary="Gets all trades", description="Returns a full list of trades")
 async def get_trader_trades_endpoint(trader_id: Annotated[str, Path(description="Get all trades by trader", title="Trader Trades", example="SML1458")],
                                      input_data: TraderTradesRequest = Depends()) -> list[Trade]:
     lambro_logger.info(f"Executing request query to get {trader_id} trades in TradingRecord collection - start")
     mongo_trades = TradeQuery(database="Trades", collection="TradingRecord")
-    trades_output = mongo_trades.get_trades(limit=input_data.limit, match=trader_id)
+    trades_output = mongo_trades.get_trades(limit=input_data.limit, match=trader_id, query_field="Trader")
     lambro_logger.info(f"Executing request query to get {trader_id} trades in TradingRecord collection - completed")
     if not trades_output:
         return JSONResponse(status_code=status.HTTP_200_OK, content=[])    
@@ -37,6 +48,17 @@ async def get_trader_trade_endpoint(trader_id: Annotated[str, Path(description="
                                      input_data: TraderTradesRequest = Depends()) -> list[Trade]:
     lambro_logger.info(f"Executing request query to get for {trader_id} the trade {trade_id} in TradingRecord collection - start")
     mongo_trades = TradeQuery(database="Trades", collection="TradingRecord")
+    trades_output = mongo_trades.get_trade_from_id(trade_id=trade_id)
+    lambro_logger.info(f"Executing request query to get for {trader_id} the trade {trade_id} in TradingRecord collection - completed")
+    if not trades_output:
+        return JSONResponse(status_code=status.HTTP_200_OK, content=[])    
+    return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(trades_output))
+
+@router.get("/trades/{trader_id}/{trade_id}/suspect", summary="Gets the validation for a trade", description="Returns a a specific validation rule for a trade given the trader id and trade id")
+async def get_trade_suspect_endpoint(trader_id: Annotated[str, Path(description="Get all trades by trader", title="Trader Trades", example="SML1458")],
+                                     trade_id: Annotated[str, Path(description="Get all trades by trader", title="Trader Trades", example="BSML1458TW.L20231123142447")]) -> list[Trade]:
+    lambro_logger.info(f"Executing request query to get for {trader_id} the trade {trade_id} in TradingRecord collection - start")
+    mongo_trades = TradeQuery(database="Trades", collection="SuspectTrades")
     trades_output = mongo_trades.get_trade_from_id(trade_id=trade_id)
     lambro_logger.info(f"Executing request query to get for {trader_id} the trade {trade_id} in TradingRecord collection - completed")
     if not trades_output:

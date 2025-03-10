@@ -32,3 +32,33 @@ class Trade(BaseModel):
         }
 
     )
+
+class SuspectTrade(BaseModel):
+    TradeId: str = Field(..., description="Unique trade identifier")
+    Trader: str = Field(..., description="Trader identifier")
+    Symbol: str = Field(..., description="Traded security identifier")
+    Quantity: int = Field(..., description="Quantity of securities bought or sold")
+    Notional: float  = Field(..., description="Monetary value of securities bought or sold")
+    Ccy: str = Field(..., description="Currency of trade")
+    Counterparty: str = Field(..., description="Counterparty of the trade - who is buying-from or selling-to")
+    ValidationLabel: str = Field(..., description="Trade validation rule applied")
+    IsSuspect: bool = Field(..., description="True if the trade validation rule applied generated a suspect")
+
+    model_config = ConfigDict(
+        title="Trade Validation Response",
+        description="A trade schema for trade response",
+        json_schema_extra = {
+            "example":  {
+                "TradeId": "BDGR1983PHNX.L20231123080108",
+                "Trader": "DGR1983",
+                "Symbol": "PHNX.L",
+                "Quantity": 30000,
+                "Notional": 185159.16172365914,
+                "Ccy": "GBP",
+                "Counterparty": "MLI",
+                "ValidationLabel": 'Sector Return Validation',
+                "IsSuspect": True
+            }
+        }
+
+    )

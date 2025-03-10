@@ -14,7 +14,7 @@ class TraderTradesRequest(BaseModel):
     )
 
 class AllTradesRequest(TraderTradesRequest):
-    search: Optional[int] = Field(
+    search: Optional[str] = Field(
         Query(default=None, title="Search trades by trader id", description="Searches for the trades of a trader based on her/his id.", example="SML")
     )
 

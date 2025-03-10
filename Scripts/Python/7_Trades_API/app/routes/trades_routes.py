@@ -35,10 +35,10 @@ async def get_trader_trades_endpoint(trader_id: Annotated[str, Path(description=
 async def get_trader_trade_endpoint(trader_id: Annotated[str, Path(description="Get all trades by trader", title="Trader Trades", example="SML1458")],
                                      trade_id: Annotated[str, Path(description="Get all trades by trader", title="Trader Trades", example="SSML1458BT-A.L20231123082457")],
                                      input_data: TraderTradesRequest = Depends()) -> list[Trade]:
-    lambro_logger.info(f"Executing request query to get {trader_id} trades in TradingRecord collection - start")
+    lambro_logger.info(f"Executing request query to get for {trader_id} the trade {trade_id} in TradingRecord collection - start")
     mongo_trades = TradeQuery(database="Trades", collection="TradingRecord")
     trades_output = mongo_trades.get_trade_from_id(trade_id=trade_id)
-    lambro_logger.info(f"Executing request query to get {trader_id} trades in TradingRecord collection - completed")
+    lambro_logger.info(f"Executing request query to get for {trader_id} the trade {trade_id} in TradingRecord collection - completed")
     if not trades_output:
         return JSONResponse(status_code=status.HTTP_200_OK, content=[])    
     return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(trades_output))

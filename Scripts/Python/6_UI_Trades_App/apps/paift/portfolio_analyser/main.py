@@ -15,7 +15,14 @@ app_ui = ui.page_fluid(
                 ui.input_selectize(id="traders_ids", label="Traders", choices=[], selected=None),
                 class_="sidebar-card"
             )
+        ),
+    ui.layout_columns(
+        ui.card(
+            ui.card_header("Trader trades", class_="body-card-header"),
+            ui.row(ui.output_data_frame("get_trades_by_trader")),
+            full_screen=True
         )
+    )
     )
 )
 
@@ -29,9 +36,18 @@ def server(input: Inputs, output: Outputs, session: Session):
     @reactive.effect
     def _():
 
-        traders_ids = get_traders_identifiers(endpoint="http://localhost:8010/traders/ids", user=current_user, group=current_group)
-        print(traders_ids)
+        traders_ids = get_traders_identifiers(endpoint="http://localhost:8010/traders/ids", user=current_user, group=current_group)        
         ui.update_selectize(id="traders_ids", label="Traders", choices=traders_ids, selected=None, server=True)
+    @reactive.effect
+    @reactive.event(input.traders_ids)
+    def _get_trades_trader():
+        pass
+
+    @output
+    @render.data_frame
+    def get_trades_by_trader():
+        pass
+
 
 
 

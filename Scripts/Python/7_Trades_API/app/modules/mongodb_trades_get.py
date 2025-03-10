@@ -56,6 +56,34 @@ class TradeQuery(GetMongoClient):
         if not results:
             return list()
         return [Trade(**x) for x in results]
+    
+    def get_trade_from_id(self, trade_id: Optional[str] = None, exact: Optional[bool] = True) -> List[Dict[str, Any]]:
+        """
+        Fetch a trade from a MongoDB collection from a trade id.
+
+        :param trade_id: Search string to match the beginning of the 'traderid' field.
+        :type search: str, optional
+        :return: List of matching trades.
+        :rtype: List[Dict[str, Any]]
+        """
+        # Build the query
+        query = {}
+        if not exact:
+            query["TradeId"] = {"$regex": f"^{trade_id}", "$options": "i"}
+        if exact:
+            query["TradeId"] = {"$eq": f"{trade_id}"}
+
+        # Create the cursor with the query
+        cursor = self.client.find(query)
+
+        # Fetch results as a list
+        results = list(cursor)
+
+        if not results:
+            return list()
+        return [Trade(**x) for x in results]
+
+
 
 class TradeInsert(GetMongoClient):
     """
@@ -123,3 +151,60 @@ class TradeDelete(GetMongoClient):
             return f"No trade found with TradeId '{trade_id}'. Nothing was deleted."
         
         return f"Trade with TradeId '{trade_id}' was successfully deleted."
+
+class TradeUpdate(GetMongoClient):
+    """
+    Delete class for trade data. Inherits connectivity from GetMongoClient.
+
+    Deletes one record from the collection.
+
+    :param url: MongoDB connection URL.
+    :type url: str
+    :param database: Name of the MongoDB database.
+    :type database: str
+    :param collection: Name of the MongoDB collection.
+    :type collection: str
+
+    Methods:        
+        delete_trade: Delete a trade by TradeId.
+    """
+
+    def update_trade(self, trade_id: str, notional: Optional[float] = None, quantity: Optional[float] = None) -> str:
+        """
+        Update a trade record by TradeId.
+
+        Updates the 'notional' and/or 'quantity' fields if they are provided (not None).
+
+        :param trade_id: The TradeId of the trade to update.
+        :type trade_id: str
+        :param notional: The new value for the 'notional' field (if provided).
+        :type notional: float, optional
+        :param quantity: The new value for the 'quantity' field (if provided).
+        :type quantity: float, optional
+        :return: A message indicating whether the update was successful or not.
+        :rtype: str
+        """
+        # Build the update fields dynamically based on non-None values
+        update_fields = {}
+        
+        if notional is not None:
+            update_fields["notional"] = notional
+        
+        if quantity is not None:
+            update_fields["quantity"] = quantity
+            
+        # If no fields to update, return an appropriate message
+        if not update_fields:
+            return "No updates were provided. Nothing was updated."
+        # Perform the update operation
+        result = self.client.update_one(
+            {"TradeId": trade_id},
+            {"$set": update_fields}
+        )
+
+        # Handle cases where no matching document is found
+        if result.matched_count == 0:
+            return f"No trade found with TradeId '{trade_id}'. Nothing was updated."
+        
+        return f"Trade with TradeId '{trade_id}' was successfully updated."
+

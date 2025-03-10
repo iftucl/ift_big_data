@@ -18,10 +18,17 @@ class AllTradesRequest(TraderTradesRequest):
         Query(default=None, title="Search trades by trader id", description="Searches for the trades of a trader based on her/his id.", example="SML")
     )
 
-class DeleteTradeRequest(TraderTradesRequest):
+class DeleteTradeRequest(BaseModel):
     trade_id: str = Field(
         Query(title="Deletes a specific trade", description="Deletes the trade of a trader based on her/his trade id.", example="BDGR1983PHNX.L20231123080108")
     )
+
+class UpdateTradeRequest(BaseModel):
+    trade_id: str = Field(
+        ..., title="Updates a specific trade", description="Update the trade of a trader based on her/his trade id.", example="BDGR1983PHNX.L20231123080108"
+    )
+    Quantity: Optional[float] = Field(default=None, description="Quantity value of securities bought or sold")
+    Notional: Optional[float] = Field(default=None, description="Monetary value of securities bought or sold")
 
 
 class CreateTrade(BaseModel):

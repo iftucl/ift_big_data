@@ -122,8 +122,8 @@ text-decoration: none;
 
 .cta-button {
     display: inline-block;
-    background-color: #ac145a;
-    color: white;
+    background-color: #7ed0ec;
+    color: #8a1047;
     padding: 10px 20px;
     text-decoration: none;
     border-radius: 5px;
@@ -221,8 +221,8 @@ footer {
     width: 100%;
     max-width: 300px;
     padding: 12px;
-    background-color: #a11353;
-    color: white;
+    background-color: #7ed0ec;
+    color: #8a1047;
     border: none;
     border-radius: 5px;
     font-size: 16px;
@@ -231,7 +231,8 @@ footer {
 }
 
 .cta-button:hover {
-    background-color: #ac145a;
+    background-color: #f60777;
+    color: #7ed0ec;
 }
 
 .forgot-password {
@@ -375,7 +376,7 @@ footer-table th, footer-table tr {
     color: #113d1d;
 }
 .body-card-header {
-    color: #113d1d;
+    color: #8a1047;
     background-color: #D2C1B7;
     font-weight: bold;    
 }
@@ -434,7 +435,7 @@ tr {
 }
 
 .dashboard-title {
-    color: #113d1d;
+    color: #8a1047;
     background-color: #D2C1B7;
     font-weight: bold;
     text-align: center;

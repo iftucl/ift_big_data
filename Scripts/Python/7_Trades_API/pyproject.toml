@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "7-trades-api"
+version = "0.1.0"
+description = ""
+authors = ["uceslc0"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pydantic = "^2.10.6"
+fastapi = "^0.115.11"
+sqlmodel = "^0.0.24"
+sqlalchemy = "^2.0.38"
+pymongo = "^4.11.2"
+motor = "^3.7.0"
+uvicorn = "^0.34.0"
+ift-global = {git = "https://github.com/iftucl/ift_global.git"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

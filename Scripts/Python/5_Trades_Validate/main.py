@@ -34,15 +34,23 @@ def main():
     file_reader=ReadInputFiles(file_config=conf["params"]["OutputFile"])
     trades_check = file_reader.read_dictionary()
     trades_validate_logger.info("File found in directory... Moving into checks.")
-    # Example usage
+    # Example usage    
+    output_load = list()
     unique_ids = set(x.Symbol for x in trades_check)
     for un_id in unique_ids:
         trades = [x for x in trades_check if x.Symbol == un_id]
         if len(trades) > 10:
             # if we have enough trades we test confidence interval
             analysis_results = analyze_trades(trades)
+            output_load.extend(analysis_results["trade_analysis"])
         else:
             # we fall back on the pre-calibrated params
-            analysis_results = test_trades_peers(trades[0])
+            for trad in trades:
+                analysis_results = test_trades_peers(trad)
+                output_load.append(analysis_results)
     mongo_loader = LoadMongo(mongo_config=conf['config']['Database']['Mongo'])    
-    mongo_loader.load_mongo_data(analysis_results)
+    mongo_loader.load_mongo_data(output_load)
+
+
+if __name__ == '__main__':
+    main()

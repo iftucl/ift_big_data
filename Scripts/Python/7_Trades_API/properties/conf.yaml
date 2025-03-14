@@ -1,10 +1,10 @@
 dev:
   config:
-    env_variables: [MINIO_USER, MINIO_PASSWORD, MINIO_URL, POSTGRES_USERNAME, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT, REDIS_PORT, REDIS_HOST]
+    env_variables: [MINIO_USER, MINIO_PASSWORD, MINIO_URL, POSTGRES_USERNAME, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT, REDIS_PORT, REDIS_HOST, MONGO_URL]
     Database:
       Mongo:
-        Collection: 'SuspectTrades'
-        Db: 'Trades'
+        Collection: 'TradingRecord'
+        Db: 'SuspectTrades'
         url: 'mongodb://localhost:27018'
       SQLite:
         FilePath : 'sqlite:///../../../../DataBases/DBs/DMOBondPrices/BondPrice.db'
@@ -25,8 +25,8 @@ docker:
     env_variables: [MINIO_USER, MINIO_PASSWORD, MINIO_URL, POSTGRES_USERNAME, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT, REDIS_PORT, REDIS_HOST]
     Database:
       Mongo:
-        Collection: 'SuspectTrades'
-        Db: 'Trades'
+        Collection: 'TradingRecord'
+        Db: 'SuspectTrades'
         url: 'mongodb://mongo_db'
       Postgres:
         Host: postgres_db

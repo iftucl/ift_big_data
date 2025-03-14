@@ -34,13 +34,13 @@ class UpdateTradeRequest(BaseModel):
 class CreateTrade(BaseModel):
     DateTime: Optional[datetime] | None = Field(description="Timestamp of the trade", default=None)
     TradeId: Optional[str] | None = Field(description="Unique trade identifier", default=None)
-    Trader: str = Field(..., description="Trader identifier")
-    Symbol: str = Field(..., description="Traded security identifier")
-    Quantity: int = Field(..., description="Quantity of securities bought or sold")
-    Notional: float  = Field(..., description="Monetary value of securities bought or sold")
-    TradeType: Literal['BUY', 'SELL'] = Field(..., description="If trade is buy or sell")
-    Ccy: str = Field(..., description="Currency of trade")
-    Counterparty: str = Field(..., description="Counterparty of the trade - who is buying-from or selling-to")
+    Trader: str = Field(..., description="Trader identifier", example="DGR1983")
+    Symbol: str = Field(..., description="Traded security identifier", example="ADM.L")
+    Quantity: int = Field(..., description="Quantity of securities bought or sold", example=10)
+    Notional: float  = Field(..., description="Monetary value of securities bought or sold", example=270.2)
+    TradeType: Literal['BUY', 'SELL'] = Field(..., description="If trade is buy or sell", example="BUY")
+    Ccy: str = Field(..., description="Currency of trade", example="GBP")
+    Counterparty: str = Field(..., description="Counterparty of the trade - who is buying-from or selling-to", example="JPM")
     # validates notional
     @field_validator("DateTime", mode="before")
     @classmethod
@@ -58,7 +58,7 @@ class CreateTrade(BaseModel):
         return self
     model_config = ConfigDict(
         title="Trade Response",
-        description="A trade schema for trade response",
+        description="A trade schema for trade submission",
         json_schema_extra = {
             "example":  {
                 "DateTime": "2023-11-23T08:01:08",

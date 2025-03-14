@@ -1,5 +1,11 @@
 # Trades API
 
+An application interface to interact with ift big data programmatically.
+
+<p align="center">
+    <a href=""><img src="../../../assets/img/api_trader.png" alt="BigData-IFT"></a>
+</p>
+
 
 ## HOW TO?
 

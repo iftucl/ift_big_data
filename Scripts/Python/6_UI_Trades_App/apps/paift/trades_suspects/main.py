@@ -37,7 +37,9 @@ def server(input: Inputs, output: Outputs, session: Session):
 
     @render.ui
     def render_headers():
-        return ui.HTML(auth_header_template.format(username = current_user, group=current_group))
+        auth_header_template_u = auth_header_template.replace("USERNAME_PLACEHOLDER", current_user)
+        auth_header_template_g = auth_header_template_u.replace("GROUP_PLACEHOLDER", current_group)
+        return ui.HTML(auth_header_template_g)
     @reactive.effect
     def _():
         traders_ids = get_traders_identifiers(endpoint=f"{LAMBRO_ENDPOINT}/traders/ids", user=current_user, group=current_group)        
@@ -51,7 +53,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     @render.data_frame
     def render_trades_by_trader_df():
         list_trades = dynamic_get_trades_suspects_trader()
-        return render.DataGrid(pd.DataFrame(list_trades))
+        return render.DataGrid(pd.DataFrame(list_trades), selection_mode="rows")
 
 
 

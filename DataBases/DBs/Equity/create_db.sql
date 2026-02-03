@@ -1,6 +1,5 @@
 -- create database
-CREATE DATABASE
-    WITH
+CREATE DATABASE fift WITH
     OWNER = postgres
     ENCODING = 'UTF8'
     LC_COLLATE = 'en_US.utf8'

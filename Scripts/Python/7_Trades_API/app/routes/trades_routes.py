@@ -15,7 +15,7 @@ router = APIRouter()
 async def get_all_trades_endpoint(input_data: AllTradesRequest = Depends()) -> list[Trade]:
     lambro_logger.info(f"Executing request query to get all trades in TradingRecord collection - start")
     mongo_trades = TradeQuery(database="Trades", collection="TradingRecord")
-    trades_output = mongo_trades.get_trades(limit=input_data.limit)
+    trades_output = mongo_trades.get_trades(limit=input_data.limit, query_field=None)
     lambro_logger.info(f"Executing request query to get all trades in TradingRecord collection - completed")
     if not trades_output:
         return JSONResponse(status_code=status.HTTP_200_OK, content=[])
@@ -30,6 +30,16 @@ async def get_trader_trades_endpoint(trader_id: Annotated[str, Path(description=
     lambro_logger.info(f"Executing request query to get {trader_id} trades in TradingRecord collection - completed")
     if not trades_output:
         return JSONResponse(status_code=status.HTTP_200_OK, content=[])    
+    return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(trades_output))
+
+@router.get("/trades/{trader_id}/suspects", summary="Gets all suspect trades", description="Returns a full list of trade suspects")
+async def get_all_suspects_endpoint(trader_id: Annotated[str, Path(description="Get all trades by trader", title="Trader Trades", example="SML1458")]) -> list[Trade]:
+    lambro_logger.info(f"Executing request query to get all trade suspects in TradingRecord collection - start")
+    mongo_trades = TradeQuery(database="Trades", collection="SuspectTrades")
+    trades_output = mongo_trades.get_trades(match=trader_id, query_field="Trader")
+    lambro_logger.info(f"Executing request query to get all trades in TradingRecord collection - completed")
+    if not trades_output:
+        return JSONResponse(status_code=status.HTTP_200_OK, content=[])
     return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(trades_output))
 
 @router.get("/trades/{trader_id}/{trade_id}", summary="Gets a trade for a trader", description="Returns a a specific trade given the trader id and trade id")
@@ -55,15 +65,7 @@ async def get_trade_suspect_endpoint(trader_id: Annotated[str, Path(description=
         return JSONResponse(status_code=status.HTTP_200_OK, content=[])    
     return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(trades_output))
 
-@router.get("/trades/suspects", summary="Gets all suspect trades", description="Returns a full list of trade suspects")
-async def get_all_suspects_endpoint(input_data: AllTradesRequest = Depends()) -> list[Trade]:
-    lambro_logger.info(f"Executing request query to get all trade suspects in TradingRecord collection - start")
-    mongo_trades = TradeQuery(database="Trades", collection="SuspectTrades")
-    trades_output = mongo_trades.get_trades(limit=input_data.limit, query_field="Trader")
-    lambro_logger.info(f"Executing request query to get all trades in TradingRecord collection - completed")
-    if not trades_output:
-        return JSONResponse(status_code=status.HTTP_200_OK, content=[])
-    return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(trades_output))
+
 
 @router.post("/trades/{trader_id}/submit-trade", summary="Create a new trade", description="For a trader, creates a new trade")
 async def post_trader_trade_endpoint(trader_id: Annotated[str, Path(description="Endpoint for trader to submit its trades", title="Trader Trade Send", example="SML1458")],
@@ -85,13 +87,15 @@ async def post_trader_trade_endpoint(trader_id: Annotated[str, Path(description=
         return JSONResponse(status_code=status.HTTP_201_CREATED, content={"Result": "Created", "ValidationStatus": "SystemFailure"})
     if not trades_output:
         return JSONResponse(status_code=status.HTTP_200_OK, content=[])
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content={"Result": "Created", "ValidationStatus": tested_trade_awaited.IsSuspect})
+    return JSONResponse(status_code=status.HTTP_201_CREATED, content={"Result": "Created",
+                                                                       "ValidationStatus": tested_trade_awaited.IsSuspect,
+                                                                       "TradeId": input_data.TradeId})
 
 @router.delete("/trades/{trader_id}/delete-trade", summary="Delete trade", description="For a trader, deletes a trade")
 async def post_trader_trade_endpoint(trader_id: Annotated[str, Path(description="Get all trades by trader", title="Trader Trades", example="SML1458")],
                                      input_data: DeleteTradeRequest = Depends()) -> str:
     lambro_logger.info(f"Executing request query to delete a new trade for {trader_id} TradingRecord collection - start")
-    delete_trade = TradeDelete(database="Trades", collection="TradingRecord")    
+    delete_trade = TradeDelete(database="TradingRecord", collection="TradingRecord")    
     trades_output = delete_trade.delete_trade(trade_id=input_data.trade_id)
     lambro_logger.info(f"Executing request query to delete trade for {trader_id} TradingRecord collection - completed")
     if not trades_output:
@@ -102,12 +106,12 @@ async def post_trader_trade_endpoint(trader_id: Annotated[str, Path(description=
 async def put_trader_trade_endpoint(trader_id: Annotated[str, Path(description="Get all trades by trader", title="Trader Trades", example="SML1458")],
                                     input_data: UpdateTradeRequest = Depends()) -> str:
     lambro_logger.info(f"Executing request query to update a trade for {trader_id} TradingRecord collection - start")
-    update_trade = TradeUpdate(database="Trades", collection="TradingRecord")    
-    trades_output = update_trade.update_trade(trade_id=input_data.trade_id, notional=input_data)
+    update_trade = TradeUpdate(database="TradingRecord", collection="TradingRecord")    
+    trades_output = update_trade.update_trade(trade_id=input_data.trade_id, notional=input_data.Notional, quantity=input_data.Quantity)
     lambro_logger.info(f"Executing request query to update a trade for {trader_id} TradingRecord collection - completed")
     if not trades_output:
         return JSONResponse(status_code=status.HTTP_200_OK, content=[])
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content="Created")
+    return JSONResponse(status_code=status.HTTP_200_OK, content="Created")
 
 
 

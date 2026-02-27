@@ -20,11 +20,11 @@ def get_traders_identifiers(endpoint: str, user:str, group: str):
         return list()
     return response_list
 
-def get_trades_by_trader(endpoint: str, trader_id: str, user:str, group: str):
+def get_trades_suspects_by_trader(endpoint: str, trader_id: str, user:str, group: str):
     """
     Get the suspects by trader ids from API.
     """
-    full_endpoint = endpoint + "/trades/trades/" + trader_id
+    full_endpoint = endpoint + "/trades/trades/" + trader_id + "/suspects"
     try:
         traders_ids = make_request_to_lambro(endpoint_url=full_endpoint, user=user, groups=group)
     except Exception as exc:

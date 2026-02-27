@@ -17,7 +17,7 @@ If you have not yet build the containers, please build and launch the containers
 
 ```bash
 
-docker compose up --build redis mongo_db postgres_db
+docker compose up --build -d redis mongo_db postgres_db zookeeper kafka kafkaconnect
 
 ```
 
@@ -25,7 +25,7 @@ In order to start the two containers:
 
 ```bash
 
-docker compose start mongo_db postgres_db redis
+docker compose start mongo_db postgres_db redis zookeeper kafka kafkaconnect
 
 ```
 

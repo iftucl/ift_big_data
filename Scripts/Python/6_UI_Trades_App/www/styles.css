@@ -1,4 +1,10 @@
-ody {
+colors {
+    --red: #8a1047;
+    --red-b: #ac145a;
+    --red-c: #a11353;
+    --cta-bg: #7ed0ec;
+}
+body {
     font-family: Arial, sans-serif;
     min-height: 100vh;
     display: flex;
@@ -9,7 +15,7 @@ ody {
 header {
     background-color: #8a1047;
     color: white;
-    padding: 20px 0;
+    padding: 10px 0;
 }
 
 .logo {
@@ -20,18 +26,21 @@ nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    max-width: 1200px;
-    margin: 0 auto;
+    margin: 5 auto;
     padding: 0 20px;
+    font-size: 1.25rem;
 }
 
 nav ul {
     list-style-type: none;
     display: flex;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    float: right;
 }
 
 nav ul li {
-    margin-left: 20px;
+    margin-left: 10px;
     position: relative; /* Add this to ensure dropdown works */
 }
 
@@ -54,14 +63,11 @@ nav ul li a {
     top: 100%; /* Ensure it appears below the button */
     left: 0;
     background-color: #f9f9f9;
-    min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1;
 }
 
 /* Links inside the dropdown */
 .dropdown-content a {
-    color: black;
+    color: white;
     padding: 12px 16px;
     text-decoration: none;
     display: block;
@@ -98,7 +104,7 @@ nav ul li a {
 }
 
 a {
-color: #a11353;
+color: #8a1047;
 text-decoration: none;
 transition: 0.3s;
 }
@@ -109,7 +115,7 @@ text-decoration: none;
 }
 
 .hero {
-    background-color: #a11353;
+    background-color: #8a1047;
     color: white;
     text-align: center;
     padding: 100px 0;
@@ -120,14 +126,18 @@ text-decoration: none;
     margin-bottom: 20px;
 }
 
-.cta-button {
-    display: inline-block;
-    background-color: #7ed0ec;
-    color: #8a1047;
-    padding: 10px 20px;
-    text-decoration: none;
-    border-radius: 5px;
+.hero-dashboard {
+    background-color: #8a1047;
+    color: white;
+    text-align: center;
+    padding: 30px 0;
 }
+
+.hero-dashboard h1 {
+    font-size: 2.5em;
+    margin-bottom: 15px;
+}
+
 .content {
     max-width: 1200px;
     margin: 40px auto;
@@ -142,9 +152,15 @@ footer {
 }
 .section-title {
     text-align: center;
-    padding-bottom: 60px;
+    padding-bottom: 30px;
     position: relative;
 }
+.section-title-column {
+    text-align: center;
+    padding-bottom: 0px;
+    position: relative;
+}
+
 .section-title h2 {
     font-size: 32px;
     font-weight: 700;
@@ -164,6 +180,30 @@ footer {
     bottom: 0;
     margin: auto;
 }
+
+.section-title-column h3 {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    position: relative;
+}
+
+
+.section-title-column h3:after {
+    content: "";
+    position: absolute;
+    display: block;
+    width: 50px;
+    height: 3px;
+    background: #ac145a;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+}
+
+
 .section-title p {
     margin-bottom: 0;
 }
@@ -222,7 +262,7 @@ footer {
     max-width: 300px;
     padding: 12px;
     background-color: #7ed0ec;
-    color: #8a1047;
+    color: #ac145a;
     border: none;
     border-radius: 5px;
     font-size: 16px;
@@ -231,7 +271,7 @@ footer {
 }
 
 .cta-button:hover {
-    background-color: #f60777;
+    background-color: #ac145a;
     color: #7ed0ec;
 }
 
@@ -241,7 +281,7 @@ footer {
 }
 
 .forgot-password a {
-    color: #a11353;
+    color: #8a1047;
     text-decoration: none;
     font-size: 14px;
     transition: 0.3s;
@@ -411,8 +451,7 @@ tr:nth-child(odd) {
   
 .table tr:nth-child(odd) {
     background-color: #D2C1B7 !important;
-}
-  
+}  
 
 th {
   padding-top: 12px;
@@ -425,7 +464,7 @@ th {
 hr {
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 1.5px solid #27ae60;  
+  border-top: 1.5px solid #ac145a;  
 }
 
 tr {
@@ -446,7 +485,7 @@ tr {
 }
 
 .btn-confirm-shiny {
-    background-color: #27ae60; /* Green */
+    background-color: #ac145a; /* Green */
     border: none;
     color: white;
     padding: 15px 32px;
@@ -471,3 +510,151 @@ tr {
     background-color: #f0eae6;
     font-weight: bold;
 }
+/* Basic styles for dropdown */
+.dropdown-content, .dropdown-content-submenu {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    width:100%;
+    left:0;
+    right:0;
+  /*  height of nav-item  */
+    top:45px;
+    display:block;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.3s linear; 
+}
+
+/* Show the dropdown content on hover */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* Show the submenu content on hover */
+.dropdown-content-lopta:hover .dropdown-content-submenu {
+    display: block;
+    left: 100%;
+    top: 0;
+}
+
+/* Show the nested submenu on hover */
+.dropdown-content-submenu:hover .dropdown-content-submenu {
+    display: block;
+    left: 100%;
+    top: 0;
+}
+progress {
+    color: #ac145a; /* Green color */
+}
+
+.navbar-nav a {
+    color: white !important;    
+}
+.navbar-brand {
+    color: white !important;
+    align-items: center;
+}
+
+.navbar-collapse {
+    margin-left: 0px;
+}
+
+.navbar-nav a:hover {
+    color: #ac145a !important;
+}
+.navbar-nav {
+    margin-left: 0px;
+    margin-top: 0px;
+}
+
+.navbar .navbar-expand-lg {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 auto !important;
+    padding: 0 0px !important;
+    background-image: none !important;
+}
+/* adds some margin below the link sets  */
+.navbar .dropdown-menu div[class*="col"] {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 auto;
+    padding: 0 0px;
+    margin-bottom: 1rem;
+ }
+ 
+ .navbar .dropdown-menu {
+   border:none;
+   background-color: #8a1047;
+   color: white;
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   background-image: none !important;
+ }
+ 
+ .me-auto {
+    float: right !important;
+    margin-right: unset !important;
+ }
+
+ /* breakpoint and up - mega dropdown styles */
+ @media screen and (min-width: 992px) {   
+   /* remove the padding from the navbar so the dropdown hover state is not broken */
+ .navbar {
+   padding-top:0px;
+   padding-bottom:0px;
+   background-color: #8a1047;
+   color: white;  
+   background-image: none !important; 
+ } 
+ /* remove the padding from the nav-item and add some margin to give some breathing room on hovers */
+ .navbar .nav-item {
+    color: white;
+    padding:.5rem .5rem;
+    margin:0 .25rem;
+    font-size: 1.25rem;
+ } 
+ /* makes the dropdown full width  */
+ .navbar .dropdown {position:static;} 
+ .navbar .dropdown-menu {
+   width:100%;
+   left:0;
+   right:0;
+ /*  height of nav-item  */
+   top:65px;   
+   display:block;
+   visibility: hidden;
+   opacity: 0;
+   transition: visibility 0s, opacity 0.3s linear;
+   background-color: #8a1047;
+   color: white;
+ }
+ /* shows the dropdown menu on hover */
+ .navbar .dropdown:hover .dropdown-menu, .navbar .dropdown .dropdown-menu:hover {
+   display:block;
+   visibility: visible;
+   opacity: 1;
+   transition: visibility 2s, opacity 0.3s linear;
+ }
+   
+ .navbar .dropdown-menu {
+     border: 1px solid rgba(0,0,0,.15);
+     background-color: #8a1047;
+     color: white;
+     margin: 0 auto;
+   }
+ .nav-link .nav-item a {
+    color: white;
+ }
+ .nav-link .nav-item a:hover {
+    color: #ac145a;
+ }  
+}
+ 
+ 

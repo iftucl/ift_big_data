@@ -169,14 +169,14 @@ services:
         - AWS_REGION=us-east-1
       entrypoint: >
         /bin/bash -c "
-        until (/usr/bin/mc config host add minio http://minio:9000 ift_bigdata minio_password) do echo '...waiting...' && sleep 1; done;
-        sleep 10 && /usr/bin/mc rm -r --force minio/icebergwarehouse;
-        sleep 10 && /usr/bin/mc mb minio/icebergwarehouse;
-        mc anonymous set public minio/icebergwarehouse;
-        sleep 10 && /usr/bin/mc rm -r --force minio/iftbigdata;
-        sleep 10 && /usr/bin/mc mb minio/iftbigdata;
-        mc anonymous set public minio/iftbigdata;
-        tail -f /dev/null
+          until (mc alias set minio http://minio:9000 ift_bigdata minio_password) do echo '...waiting...' && sleep 1; done;
+          sleep 10 && mc rm -r --force minio/icebergwarehouse;
+          sleep 10 && mc mb minio/icebergwarehouse;
+          mc anonymous set public minio/icebergwarehouse;
+          sleep 10 && mc rm -r --force minio/iftbigdata;
+          sleep 10 && mc mb minio/iftbigdata;
+          mc anonymous set public minio/iftbigdata;
+          tail -f /dev/null
         "      
     iceberg_rest:
       container_name: iceberg_rest

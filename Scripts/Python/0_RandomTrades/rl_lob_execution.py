@@ -1,7 +1,11 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import random
 import math
+import random
+import numpy as np
+from collections import deque
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
 
 class OrderBook:
     def __init__(self, reference_price, tick_size, n_levels=10, seed=None):
@@ -554,162 +558,549 @@ class OrderBook:
             print(f"  {px:.2f}, {q}")
         print("=" * 60)
 
-def simulate_multi_order_block(parent_orders, ob_params, sim_params):
-    """
-    Executes multiple parent orders instantly as blocks exactly when they arrive.
-    parent_orders format: { arrival_t: qty, ... } e.g., {5: -10000, 20: -5000}
-    """
-    # 1. Initialize OrderBook
-    ob = OrderBook(**ob_params)
-    ob.order_book_levels(execution_qty=abs(list(parent_orders.values())[0]), noise=0.1, mult_low=5.0, mult_high=10.0)
+class lob_environment:
+    def __init__(self,
+                 reference_price=28.13,
+                 tick_size=0.01,
+                 n_levels=10,
+                 seed=None,
+                 # Book initialisation parameters
+                 noise=0.10,
+                 mult_low=5.0,
+                 mult_high=10.0,
+                 book_init_execution_qty=10000,
+                 # Background flow and refill
+                 bg_lam=3.0,
+                 bg_p_buy=0.5,
+                 rho=0.30,
+                 noise_refill=0.05,
+                 # Permanent impact (set to 0 for simple demonstration)
+                 perm_eta_ticks=0.0,
+                 perm_gamma=1.0,
+                 perm_scale=7500,
+                 # Temporary impact for main trades
+                 impact_eta_ticks=0.0,
+                 impact_gamma=1.5,
+                 impact_scale=7500,
+                 impact_use_cum=True,
+                 # Temporary impact for background trades (usually zero)
+                 bg_impact_eta_ticks=0.0,
+                 bg_impact_gamma=1.5,
+                 bg_impact_scale=7500,
+                 bg_impact_use_cum=True,
+                 # RL specific
+                 action_fracs=(0.0, 0.1, 0.25, 0.5, 1.0),
+                 max_steps=20,
+                 enforce_min_clip_to_finish=True,
+                 order="bg_first"):
 
-    # Block schedule is just the parent orders exactly as they arrive
-    trade_schedule = parent_orders
-    max_t = max(parent_orders.keys()) + 5 # run a bit past the last order
+        self.reference_price = reference_price
+        self.tick_size = tick_size
+        self.n_levels = n_levels
+        self.base_seed = seed
+        self.seed = seed   # will be updated on reset
 
-    # 2. Run simulation
-    history, logs = ob.run(n_steps=max_t, trade_schedule=trade_schedule, **sim_params)
+        self.noise = noise
+        self.mult_low = mult_low
+        self.mult_high = mult_high
+        self.book_init_execution_qty = abs(int(book_init_execution_qty))
 
-    # 3. Calculate Global Slippage
-    total_filled = 0
-    total_actual_notional = 0.0
-    total_arrival_notional = 0.0
+        self.bg_lam = bg_lam
+        self.bg_p_buy = bg_p_buy
+        self.rho = rho
+        self.noise_refill = noise_refill
 
-    for t, requested_qty in parent_orders.items():
-        # Get mid-price right before the trade (snapshot at t-1)
-        snap = history[t - 1]
-        best_bid = snap["bids"][0][0] if snap["bids"] else ob.reference_price
-        best_ask = snap["asks"][0][0] if snap["asks"] else ob.reference_price
-        arrival_mid = (best_bid + best_ask) / 2.0
+        self.perm_eta_ticks = perm_eta_ticks
+        self.perm_gamma = perm_gamma
+        self.perm_scale = perm_scale
 
-        # Track expected notional based on arrival mid
-        total_arrival_notional += arrival_mid * requested_qty
+        self.main_exec_kwargs = {
+            "impact_eta_ticks": impact_eta_ticks,
+            "impact_gamma": impact_gamma,
+            "impact_scale": impact_scale,
+            "impact_use_cum": impact_use_cum,
+        }
+        self.bg_exec_kwargs = {
+            "impact_eta_ticks": bg_impact_eta_ticks,
+            "impact_gamma": bg_impact_gamma,
+            "impact_scale": bg_impact_scale,
+            "impact_use_cum": bg_impact_use_cum,
+        }
 
-        # Get actual execution data
-        if logs[t]["trade_reports"]:
-            rep = logs[t]["trade_reports"][0]
-            total_filled += rep["filled_qty"]
-            total_actual_notional += rep["notional"]
+        self.action_fracs = list(action_fracs)
+        self.max_steps = max_steps
+        self.enforce_min_clip_to_finish = enforce_min_clip_to_finish
+        self.order = order
 
-    # Calculate global metrics
-    global_vwap = abs(total_actual_notional) / abs(total_filled) if total_filled != 0 else None
-    arrival_vwap = abs(total_arrival_notional) / abs(sum(parent_orders.values())) if sum(parent_orders.values()) != 0 else arrival_mid
+        # Will be set in reset()
+        self.ob = None
+        self.remaining = None
+        self.parent_qty = None
+        self.arrival_price = None
+        self.total_notional = None
+        self.episode_step = None
+        self.total_abs_notional = None
+        self.total_filled_abs = None
 
-    net_parent_qty = sum(parent_orders.values())
-    slippage = (global_vwap - arrival_vwap) if net_parent_qty > 0 else (arrival_vwap - global_vwap)
+    def _get_state(self):
+        """Construct the observation vector from the current LOB."""
+        bids = self.ob.bids
+        asks = self.ob.asks
 
-    return {
-        "strategy": "Multi-Block",
-        "net_requested_qty": net_parent_qty,
-        "net_filled_qty": total_filled,
-        "arrival_vwap": arrival_vwap,
-        "global_vwap": global_vwap,
-        "slippage": slippage
-    }
+        # Best levels
+        best_bid = bids[0][0] if bids else self.reference_price
+        best_ask = asks[0][0] if asks else self.reference_price
+        bid_size = bids[0][1] if bids else 0
+        ask_size = asks[0][1] if asks else 0
 
+        # Normalised features
+        remaining_frac = self.remaining / self.parent_qty if self.parent_qty != 0 else 0.0
+        time_frac = (self.max_steps - self.episode_step) / self.max_steps
 
-def simulate_multi_order_twap(parent_orders, time_horizon, ob_params, sim_params):
-    """
-    Slices multiple parent orders independently from their arrival time,
-    aggregating any overlapping slices into a single net market order per step.
-    """
-    # 1. Build the overlapping TWAP schedule (No peeking ahead!)
-    trade_schedule = {}
-    max_t = 0
+        # Price levels relative to arrival (in ticks)
+        bid_rel = (best_bid - self.arrival_price) / self.tick_size
+        ask_rel = (best_ask - self.arrival_price) / self.tick_size
 
-    for arrival_t, qty in parent_orders.items():
-        sign = 1 if qty > 0 else -1
-        abs_qty = abs(qty)
-        slice_size = abs_qty // time_horizon
-        remainder = abs_qty % time_horizon
+        # Log‑scale sizes (to handle wide range)
+        bid_size_norm = np.log1p(bid_size) / 10.0
+        ask_size_norm = np.log1p(ask_size) / 10.0
 
-        for i in range(time_horizon):
-            t = arrival_t + i
-            chunk = slice_size
-            if i == time_horizon - 1:
-                chunk += remainder # sweep odd lots on the last slice
+        # Next few levels (top 3)
+        n_depth = 3
+        bid_prices, bid_sizes, ask_prices, ask_sizes = [], [], [], []
+        for i in range(n_depth):
+            if i < len(bids):
+                p, q = bids[i]
+                bid_prices.append((p - self.arrival_price) / self.tick_size)
+                bid_sizes.append(np.log1p(q))
+            else:
+                bid_prices.append(0.0)
+                bid_sizes.append(0.0)
+            if i < len(asks):
+                p, q = asks[i]
+                ask_prices.append((p - self.arrival_price) / self.tick_size)
+                ask_sizes.append(np.log1p(q))
+            else:
+                ask_prices.append(0.0)
+                ask_sizes.append(0.0)
 
-            # Net overlapping orders together
-            trade_schedule[t] = trade_schedule.get(t, 0) + (chunk * sign)
-            max_t = max(max_t, t)
+        # Flatten into a single array
+        state = np.array([
+            remaining_frac,
+            time_frac,
+            bid_rel,
+            ask_rel,
+            bid_size_norm,
+            ask_size_norm,
+            *bid_prices,
+            *bid_sizes,
+            *ask_prices,
+            *ask_sizes
+        ], dtype=np.float32)
+        return state
 
-    # 2. Initialize and Run
-    ob = OrderBook(**ob_params)
-    ob.order_book_levels(execution_qty=abs(list(parent_orders.values())[0]), noise=0.1, mult_low=5.0, mult_high=10.0)
+    def reset(self, parent_qty, side=None):
+        """
+        Start a new episode.
+        parent_qty : signed quantity to execute (negative = sell, positive = buy)
+        side       : optional, if given overrides sign (e.g., side='sell')
+        """
+        if side is not None:
+            parent_qty = abs(parent_qty) * (1 if side == 'buy' else -1)
+        self.parent_qty = parent_qty
+        self.remaining = parent_qty
+        self.total_notional = 0.0
+        self.episode_step = 0
+        self.total_abs_notional = 0.0
+        self.total_filled_abs = 0
 
-    history, logs = ob.run(n_steps=max_t, trade_schedule=trade_schedule, **sim_params)
+        # Vary the seed slightly to get different random streams each episode
+        if self.base_seed is not None:
+            self.seed = self.base_seed + np.random.randint(0, 10000)
 
-    # 3. Calculate Global Slippage
-    total_filled = 0
-    total_actual_notional = 0.0
-    total_arrival_notional = 0.0
+        # Create and initialise the order book
+        self.ob = OrderBook(self.reference_price, self.tick_size,
+                            self.n_levels, self.seed)
+        self.ob.order_book_levels(execution_qty=self.book_init_execution_qty,
+                                  noise=self.noise,
+                                  mult_low=self.mult_low,
+                                  mult_high=self.mult_high)
 
-    # Calculate what the ideal arrival notional was for each parent order
-    for t, requested_qty in parent_orders.items():
-        snap = history[t - 1] # Snapshot just before this specific order arrived
-        best_bid = snap["bids"][0][0] if snap["bids"] else ob.reference_price
-        best_ask = snap["asks"][0][0] if snap["asks"] else ob.reference_price
-        arrival_mid = (best_bid + best_ask) / 2.0
+        # Arrival mid price (benchmark)
+        best_bid = self.ob.bids[0][0] if self.ob.bids else self.reference_price
+        best_ask = self.ob.asks[0][0] if self.ob.asks else self.reference_price
+        self.arrival_price = (best_bid + best_ask) / 2.0
 
-        total_arrival_notional += arrival_mid * requested_qty
+        return self._get_state()
 
-    # Calculate actual executed notional across all TWAP steps
-    for t in range(1, max_t + 1):
-        if t in logs and logs[t]["trade_reports"]:
-            rep = logs[t]["trade_reports"][0]
-            total_filled += rep["filled_qty"]
-            total_actual_notional += rep["notional"]
+    def step(self, action_idx):
+        """
+        Execute one time step.
+        action_idx : index into self.action_fracs
+        returns (next_state, reward, done, info)
+        """
+        # ----- 1. Determine quantity to trade this step -----
+        if self.episode_step == self.max_steps - 1:
+            # Last step: must liquidate all remaining inventory
+            qty_to_trade = self.remaining
+        else:
+            frac = self.action_fracs[action_idx]
+            qty_to_trade = int(round(frac * abs(self.remaining)))
+            qty_to_trade = qty_to_trade * (1 if self.remaining > 0 else -1)
 
-    # Calculate global metrics
-    global_vwap = abs(total_actual_notional) / abs(total_filled) if total_filled != 0 else None
-    arrival_vwap = abs(total_arrival_notional) / abs(sum(parent_orders.values())) if sum(parent_orders.values()) != 0 else arrival_mid
+            # Optional pacing guardrail: ensure we trade enough each step
+            # so the remaining inventory can be finished by the horizon.
+            if self.enforce_min_clip_to_finish:
+                steps_left_including_this = self.max_steps - self.episode_step
+                min_abs_clip = int(math.ceil(abs(self.remaining) / max(1, steps_left_including_this)))
+                if abs(qty_to_trade) < min_abs_clip:
+                    qty_to_trade = min_abs_clip * (1 if self.remaining > 0 else -1)
 
-    net_parent_qty = sum(parent_orders.values())
-    slippage = (global_vwap - arrival_vwap) if net_parent_qty > 0 else (arrival_vwap - global_vwap)
+            # Guard against rounding overshoot
+            if abs(qty_to_trade) > abs(self.remaining):
+                qty_to_trade = self.remaining
 
-    return {
-        "strategy": f"Multi-TWAP (Horizon={time_horizon})",
-        "net_requested_qty": net_parent_qty,
-        "net_filled_qty": total_filled,
-        "arrival_vwap": arrival_vwap,
-        "global_vwap": global_vwap,
-        "slippage": slippage
-    }
+        # ----- 2. Advance the order book by one time unit -----
+        # (background flow, main trade, refill, permanent impact)
+        t_label = self.episode_step + 1
+        log = self.ob.step(
+            t=t_label,
+            trades=[qty_to_trade] if qty_to_trade != 0 else [],
+            bg_lam=self.bg_lam,
+            bg_p_buy=self.bg_p_buy,
+            rho=self.rho,
+            noise=self.noise_refill,
+            perm_eta_ticks=self.perm_eta_ticks,
+            perm_gamma=self.perm_gamma,
+            perm_scale=self.perm_scale,
+            main_exec_kwargs=self.main_exec_kwargs,
+            bg_exec_kwargs=self.bg_exec_kwargs,
+            order=self.order
+        )
 
-# Setup parameters
-ob_params = dict(reference_price=28.13, tick_size=0.01, n_levels=10, seed=42)
-sim_params = dict(
-    bg_lam=3.0, bg_p_buy=0.50, rho=1.0, noise=0.1,
-    perm_eta_ticks=0.0, perm_gamma=1.0, perm_scale=7500,
-    main_exec_kwargs=dict(impact_eta_ticks=0.0, impact_gamma=1.5, impact_scale=7500, impact_use_cum=True),
-    bg_exec_kwargs=dict(impact_eta_ticks=0.0, impact_gamma=1.5, impact_scale=7500, impact_use_cum=True),
-    order="bg_first"
-)
+        # ----- 3. Update inventory and compute incremental cost -----
+        trade_report = log['trade_reports'][0] if log['trade_reports'] else None
+        step_cost = 0.0
+        if trade_report is not None:
+            filled = trade_report['filled_qty']
+            notional = trade_report['notional']
+            filled_abs = abs(filled)
+            self.remaining -= filled
+            self.total_notional += notional
+            self.total_abs_notional += abs(notional)
+            self.total_filled_abs += filled_abs
 
-# Arriving order flow: Sell 10k at t=5, Sell 5k at t=20, Buy 4k at t=35
-parent_orders = {
-    5: -10000,
-    20: -5000,
-    35: 4000
+            # Incremental cost relative to arrival price
+            vwap = trade_report['vwap']
+            if filled_abs > 0 and vwap is not None:
+                if self.parent_qty < 0:   # sell
+                    step_cost = (self.arrival_price - vwap) * filled_abs
+                else:                      # buy
+                    step_cost = (vwap - self.arrival_price) * filled_abs
+            reward = -step_cost
+        else:
+            reward = 0.0
+
+        self.episode_step += 1
+
+        # ----- 4. Check termination -----
+        done = (self.remaining == 0) or (self.episode_step >= self.max_steps)
+
+        # If we hit max_steps and still have inventory, mark to market at current mid
+        # (this handles the case where full liquidation failed due to insufficient depth)
+        if done and self.remaining != 0:
+            best_bid = self.ob.bids[0][0] if self.ob.bids else self.reference_price
+            best_ask = self.ob.asks[0][0] if self.ob.asks else self.reference_price
+            current_mid = (best_bid + best_ask) / 2.0
+            rem_abs = abs(self.remaining)
+            if self.parent_qty < 0:
+                terminal_cost = (self.arrival_price - current_mid) * rem_abs
+            else:
+                terminal_cost = (current_mid - self.arrival_price) * rem_abs
+            reward += -terminal_cost   # add the mark‑to‑market penalty
+            step_cost += terminal_cost
+            # (remaining is not actually filled, but we treat it as an opportunity cost)
+
+        next_state = self._get_state()
+        info = {
+            'filled': trade_report['filled_qty'] if trade_report else 0,
+            'vwap': trade_report['vwap'] if trade_report else None,
+            'remaining': self.remaining,
+            'step': self.episode_step,
+            'cost': step_cost
+        }
+
+        if done:
+            episode_vwap = (self.total_abs_notional / self.total_filled_abs) if self.total_filled_abs > 0 else None
+            if episode_vwap is not None:
+                slippage = (episode_vwap - self.arrival_price) if self.parent_qty > 0 else (self.arrival_price - episode_vwap)
+            else:
+                slippage = None
+            info['episode_vwap'] = episode_vwap
+            info['episode_slippage'] = slippage
+
+        return next_state, reward, done, info
+
+class DQN(nn.Module):
+    def __init__(self, state_dim, action_dim, hidden_dims=[128, 64]):
+        """
+        Args:
+            state_dim (int): dimension of the input state (18 for our environment)
+            action_dim (int): number of discrete actions
+            hidden_dims (list): list of hidden layer sizes
+        """
+        super(DQN, self).__init__()
+        layers = []
+        prev_dim = state_dim
+        for h in hidden_dims:
+            layers.append(nn.Linear(prev_dim, h))
+            layers.append(nn.ReLU())
+            prev_dim = h
+        layers.append(nn.Linear(prev_dim, action_dim))
+        self.net = nn.Sequential(*layers)
+
+    def forward(self, x):
+        """
+        Args:
+            x (torch.Tensor): state tensor of shape (batch_size, state_dim)
+        Returns:
+            torch.Tensor: Q-values for each action, shape (batch_size, action_dim)
+        """
+        return self.net(x)
+
+class ReplayBuffer:
+    def __init__(self, capacity):
+        """
+        Args:
+            capacity (int): maximum number of transitions to store
+        """
+        self.buffer = deque(maxlen=capacity)
+
+    def push(self, state, action, reward, next_state, done):
+        """
+        Store a transition.
+        Args:
+            state:       numpy array or tensor of shape (state_dim,)
+            action:      int (action index)
+            reward:      float
+            next_state:  numpy array or tensor of shape (state_dim,)
+            done:        bool
+        """
+        # Convert numpy arrays to tensors for consistency
+        if not isinstance(state, torch.Tensor):
+            state = torch.FloatTensor(state)
+        if not isinstance(next_state, torch.Tensor):
+            next_state = torch.FloatTensor(next_state)
+        self.buffer.append((state, action, reward, next_state, done))
+
+    def sample(self, batch_size):
+        """
+        Sample a random batch of transitions.
+        Returns:
+            A tuple of (states, actions, rewards, next_states, dones)
+            all as PyTorch tensors (except dones as booleans).
+        """
+        batch = random.sample(self.buffer, batch_size)
+        states, actions, rewards, next_states, dones = zip(*batch)
+
+        # Stack into tensors
+        states = torch.stack(states)                 # (batch, state_dim)
+        actions = torch.LongTensor(actions)          # (batch,)
+        rewards = torch.FloatTensor(rewards)         # (batch,)
+        next_states = torch.stack(next_states)       # (batch, state_dim)
+        dones = torch.BoolTensor(dones)               # (batch,)
+
+        return states, actions, rewards, next_states, dones
+
+    def __len__(self):
+        return len(self.buffer)
+
+# ==================== Training Setup ====================
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {device}")
+
+# Environment parameters
+env_params = {
+    "reference_price": 28.13,
+    "tick_size": 0.01,
+    "n_levels": 10,
+    "seed": 7,
+    "noise": 0.10,
+    "mult_low": 5.0,
+    "mult_high": 10.0,
+    "book_init_execution_qty": 7000,
+    "bg_lam": 3.0,
+    "bg_p_buy": 0.5,
+    "rho": 1.0,                # full refill each step
+    "noise_refill": 0.05,
+    "perm_eta_ticks": 0.2,     # no permanent impact
+    "perm_gamma": 1.0,
+    "perm_scale": 7500,
+    "impact_eta_ticks": 0.5,   # no temporary impact for main trades
+    "impact_gamma": 1.5,
+    "impact_scale": 7500,
+    "impact_use_cum": True,
+    "bg_impact_eta_ticks": 0.5,
+    "bg_impact_gamma": 1.5,
+    "bg_impact_scale": 7500,
+    "bg_impact_use_cum": True,
+    "action_fracs": (0.0, 0.1, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.0),
+    "max_steps": 50,
+    "order": "bg_first"
 }
 
-horizon = 100
+# Create environment
+env = lob_environment(**env_params)
 
-print("\n" + "=" * 50)
-print("MULTI-ORDER EXECUTION COMPARISON")
-print("=" * 50)
+# DQN hyperparameters
+state_dim = 18                  # from _get_state()
+action_dim = len(env.action_fracs)
+hidden_dims = [128, 64]
+learning_rate = 1e-3
+buffer_capacity = 10000
+batch_size = 128
+gamma = 0.99                    # discount factor
+target_update_freq = 50        # steps between target network updates
+epsilon_start = 1.0
+epsilon_end = 0.05
+epsilon_decay = 500             # number of steps over which epsilon decays
+num_episodes = 5000
+parent_qty = -10000              # sell 10,000 shares
 
-# Run Block
-block_res = simulate_multi_order_block(parent_orders, ob_params, sim_params)
-# Run TWAP
-twap_res = simulate_multi_order_twap(parent_orders, horizon, ob_params, sim_params)
+# Networks
+policy_net = DQN(state_dim, action_dim, hidden_dims).to(device)
+target_net = DQN(state_dim, action_dim, hidden_dims).to(device)
+target_net.load_state_dict(policy_net.state_dict())
+target_net.eval()
 
-for res in [block_res, twap_res]:
-    print(f"Strategy:         {res['strategy']}")
-    print(f"Net Requested:    {res['net_requested_qty']}")
-    print(f"Net Filled:       {res['net_filled_qty']}")
-    print(f"Arrival VWAP:     {res['arrival_vwap']:.4f}")
-    print(f"Final Execution:  {res['global_vwap']:.4f}")
-    slippage_ticks = res['slippage'] / ob_params['tick_size']
-    print(f"Slippage:         {res['slippage']:.4f} ({slippage_ticks:.1f} ticks)")
-    print("-" * 50)
+optimizer = optim.Adam(policy_net.parameters(), lr=learning_rate)
+replay_buffer = ReplayBuffer(buffer_capacity)
+
+# Exploration schedule
+def get_epsilon(step):
+    return epsilon_end + (epsilon_start - epsilon_end) * math.exp(-1.0 * step / epsilon_decay)
+
+# Training loop
+global_step = 0
+episode_rewards = []
+episode_costs = []  # total cost (positive = slippage) per episode
+
+for ep in range(num_episodes):
+    state = env.reset(parent_qty=parent_qty)
+    state = torch.FloatTensor(state).to(device)
+    done = False
+    total_reward = 0.0
+    total_cost = 0.0
+    ep_step = 0
+
+    while not done:
+        # Select action (epsilon-greedy)
+        epsilon = get_epsilon(global_step)
+        if random.random() < epsilon:
+            action = random.randint(0, action_dim - 1)
+        else:
+            with torch.no_grad():
+                q_values = policy_net(state.unsqueeze(0))
+                action = q_values.argmax().item()
+
+        # Take step in environment
+        next_state_np, reward, done, info = env.step(action)
+        next_state = torch.FloatTensor(next_state_np).to(device)
+
+        # Store transition
+        replay_buffer.push(state.cpu(), action, reward, next_state.cpu(), done)
+
+        state = next_state
+        total_reward += reward
+        total_cost += -reward  # cost = -reward
+        ep_step += 1
+        global_step += 1
+
+        # Training step (if enough samples)
+        if len(replay_buffer) >= batch_size:
+            # Sample batch
+            states, actions, rewards, next_states, dones = replay_buffer.sample(batch_size)
+            states = states.to(device)
+            actions = actions.to(device)
+            rewards = rewards.to(device)
+            next_states = next_states.to(device)
+            dones = dones.to(device)
+
+            # Compute current Q values
+            current_q = policy_net(states).gather(1, actions.unsqueeze(1)).squeeze(1)
+
+            # Compute target Q values
+            with torch.no_grad():
+                next_q = target_net(next_states).max(1)[0]
+                target_q = rewards + gamma * next_q * (~dones)
+
+            # Loss
+            loss = F.mse_loss(current_q, target_q)
+
+            # Optimize
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+        # Update target network
+        if global_step % target_update_freq == 0:
+            target_net.load_state_dict(policy_net.state_dict())
+
+    episode_rewards.append(total_reward)
+    episode_costs.append(total_cost)
+
+    if (ep + 1) % 50 == 0:
+        avg_cost = np.mean(episode_costs[-50:])
+        print(f"Episode {ep+1}, Avg Cost (last 50): {avg_cost:.2f}, Epsilon: {epsilon:.4f}")
+
+print("Training finished.")
+
+# ------------------------------------------------------------
+# Evaluation: run a few test episodes with the learned policy (no exploration)
+# ------------------------------------------------------------
+def evaluate_policy(env, policy_net, parent_qty, n_episodes=100):
+    policy_net.eval()
+    total_costs = []
+    parent_abs = max(1, abs(parent_qty))
+    for ep in range(n_episodes):
+        state = env.reset(parent_qty=parent_qty)
+        state = torch.FloatTensor(state).to(device)
+        done = False
+        cost = 0.0
+        step = 0
+        action_schedule = []
+        exec_frac_schedule = []
+        while not done:
+            with torch.no_grad():
+                q_values = policy_net(state.unsqueeze(0))
+                action = q_values.argmax().item()
+            # Record chosen action fraction
+            if step < env.max_steps - 1:
+                frac = env.action_fracs[action]
+            else:
+                frac = 1.0  # last step forced liquidation
+            action_schedule.append(frac)
+
+            next_state_np, reward, done, info = env.step(action)
+            state = torch.FloatTensor(next_state_np).to(device)
+
+            # Record realised executed fraction of parent order this step
+            exec_frac_schedule.append(abs(info['filled']) / parent_abs)
+
+            cost += -reward
+            step += 1
+        total_costs.append(cost)
+        episode_vwap = info.get('episode_vwap', None)
+        episode_slippage = info.get('episode_slippage', None)
+        vwap_str = f"{episode_vwap:.4f}" if episode_vwap is not None else "None"
+        slippage_str = f"{episode_slippage:.4f}" if episode_slippage is not None else "None"
+        print(
+            f"Test episode {ep+1}: cost = {cost:.2f}, vwap = {vwap_str}, slippage = {slippage_str}, "
+            f"actions = {[f'{f:.2f}' for f in action_schedule]}, "
+            f"exec_frac_parent = {[f'{f:.2f}' for f in exec_frac_schedule]}"
+        )
+    avg_cost = np.mean(total_costs)
+    print(f"Average test cost: {avg_cost:.2f}")
+    return avg_cost
+
+avg_test_cost = evaluate_policy(env, policy_net, parent_qty, n_episodes=5)

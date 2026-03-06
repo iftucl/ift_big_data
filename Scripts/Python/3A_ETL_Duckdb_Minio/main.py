@@ -36,16 +36,20 @@ if __name__ == '__main__':
     args = arg_parse_cmd()
     parsed_args = args.parse_args()    
 
-    # example: conf = ReadConfig("dev")
-    conf = ReadConfig(parsed_args.env_type)
+    # example: env_type = "dev"
+    env_type=parsed_args.env_type
+    conf = ReadConfig(env_type)
     
     set_env_variables(env_variables=conf['config']['env_variables'],
-                      env_type=parsed_args.env_type,
+                      env_type=env_type,
                       env_file=True)
     # set_env_variables(env_variables=conf['config']['env_variables'], env_type="dev", env_file=True)
     etl_duckdb_logger.info(f'Command line argument parsed & main config loaded')
     # get latest file from MinIO
-    duck_client = DuckDBMinioReader(bucket_name=conf['config']['Database']['Minio']['Bucket'])
+    duck_client = DuckDBMinioReader(
+        bucket_name=conf['config']['Database']['Minio']['Bucket'],
+        region="eu-west-1",
+        endpoint_url="localhost:9000")
     # read latest file from MinIO
     # equivalent of -> business_date = datetime(2026, 1, 1).strftime('%Y%m%d')
     business_date = args.run_date.strftime('%Y%m%d')
@@ -62,8 +66,8 @@ if __name__ == '__main__':
     # establish connection to postgres database
     database_client = DatabaseMethods(conf['config']['Database']['Postgres'], 'Postgres')
     etl_duckdb_logger.info(f'established db connection via sql client')
-    # upsert trades to postgres db
-    aggregated_trades=[]
+    # 
+    aggregated_trades=[PortfolioPositions(**x) for x in daily_aggregation]
     database_client.execute(ops_type='upsert', data_load=aggregated_trades)
     etl_duckdb_logger.info('Trades aggregation and upsert completed')
     etl_duckdb_logger.info('Duckdb aggregate script completed')    

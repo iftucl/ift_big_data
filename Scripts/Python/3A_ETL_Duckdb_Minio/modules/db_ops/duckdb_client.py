@@ -47,7 +47,7 @@ class DuckDBMinioReader:
         self.user=kwargs.get("user") or os.environ["MINIO_USER"]
         self.password=kwargs.get("password") or os.environ["MINIO_PASSWORD"]
         self.endpoint_url=kwargs.get("endpoint_url") or os.environ["MINIO_URL"]
-        self.use_ssl = kwargs.get("use_ssl", True)
+        self.use_ssl = kwargs.get("use_ssl", False)
         self.bucket_name = bucket_name or os.environ["MINIO_BUCKET"]
         self.minio_region = kwargs.get("region") or os.environ["MINIO_REGION"]
         self.con = self._connect()

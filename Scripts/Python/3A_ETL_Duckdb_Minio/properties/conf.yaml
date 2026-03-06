@@ -1,0 +1,42 @@
+dev:
+  config:
+    env_variables: ['MINIO_USER', 'MINIO_PASSWORD', 'MINIO_URL']
+    Database:
+      Minio:
+        Bucket: 'iftbigdata'
+      Mongo:
+        Collection: 'TradingRecord'
+        Db: 'Trades'
+        url: 'mongodb://localhost:27018'
+      Postgres:
+        Host: localhost
+        Database: fift
+        Username: postgres
+        Password: postgres
+        Port: 5438
+  params:
+    OutputFile: 
+      DataLake : '/iftbigdata/DataLake/Trades'
+      FileName: 'EquityTrades_'
+      ColumnNames: ['DateTime','TradeId','Trader','ISIN','Quantity','Notional','TradeType','Ccy','Counterparty']
+docker:
+  config:
+    env_variables: ['MINIO_USER', 'MINIO_PASSWORD', 'MINIO_URL']
+    Database:
+      Minio:
+        Bucket: 'iftbigdata'
+      Mongo:
+        Collection: 'TradingRecord'
+        Db: 'Trades'
+        url: 'mongodb://localhost:27018'
+      Postgres:
+        Host: localhost
+        Database: fift
+        Username: postgres
+        Password: postgres
+        Port: 5438
+  params:
+    OutputFile: 
+      DataLake : '/iftbigdata/DataLake/Trades'
+      FileName: 'EquityTrades_'
+      ColumnNames: ['DateTime','TradeId','Trader','ISIN','Quantity','Notional','TradeType','Ccy','Counterparty']

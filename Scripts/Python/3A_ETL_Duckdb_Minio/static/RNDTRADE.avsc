@@ -1,0 +1,16 @@
+{
+    "namespace": "RNDTRADE.avro",
+    "type": "record",
+    "name": "instruments",
+    "fields": [
+        {"name": "DateTime", "type": "string"}, 
+        {"name": "TradeId", "type": "string"}, 
+        {"name": "Trader", "type": "string"},
+        {"name": "ISIN", "type": "string"},
+        {"name": "Quantity", "type": "float"},
+        {"name": "Notional", "type": "float"},
+        {"name": "TradeType", "type": "string"},
+        {"name": "Ccy", "type": "string"},
+        {"name": "Counterparty", "type": "string"}
+    ]
+}

@@ -11,6 +11,10 @@ def get_postgres_data(sql_query: str, **kwargs):
 
     :param: sql_query: text query like "SELECT * FROM equity_static"    
     """
+    if isinstance(sql_query, str):
+        query_execute=text(sql_query)
+    else:
+        query_execute=sql_query
     pg_config = PostgresConfig(username=kwargs.get("username"),
                                password=kwargs.get("password"),
                                host=kwargs.get("host"),
@@ -24,7 +28,7 @@ def get_postgres_data(sql_query: str, **kwargs):
                          port=pg_config.port,
                          database=pg_config.database) as db:
         try:
-            result = db.session.execute(text(sql_query))
+            result = db.session.execute(query_execute)
             return result.all()
         except Exception as e:
             calibration_logger.error(f"An error occurred: {e}")

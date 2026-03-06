@@ -37,5 +37,6 @@ if __name__ == '__main__':
                              file_config=conf['params']['OutputFile'],
                              log_file='./static/file_load_logger.txt')    
     mongo_loader.get_latest_input_file()
+    data=mongo_loader.read_dictionary()
     mongo_loader.load_mongo_data()
     etl_mongo_logger.info('Script completed')

@@ -20,7 +20,7 @@ If you haven't build the containers yet,
 
 ```bash
 
-docker compose up minio postgres_db -d
+docker compose up minio minio_client postgres_db -d
 
 ```
 

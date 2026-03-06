@@ -1,6 +1,6 @@
 # DuckDB MinIO ETL - Trades Aggregator
 
-Aggregates trades from Minio using Duckdb.
+Aggregates trades from Minio using Duckdb with read csv auto functionality.
 
 
 ## Configuration
@@ -33,7 +33,7 @@ Script can be triggered as:
 
 ```bash
 
-cd Scripts/Python/3A_ETL_Duckdb_MinIO
+cd Scripts/Python/3A_ETL_Duckdb_Minio
 poetry run python main.py --date_run='2023-11-23' --env_type='dev'
 
 ```

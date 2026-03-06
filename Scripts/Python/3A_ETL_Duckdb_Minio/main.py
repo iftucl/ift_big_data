@@ -52,7 +52,7 @@ if __name__ == '__main__':
         endpoint_url="localhost:9000")
     # read latest file from MinIO
     # equivalent of -> business_date = datetime(2026, 1, 1).strftime('%Y%m%d')
-    business_date = args.run_date.strftime('%Y%m%d')
+    business_date = parsed_args.run_date.strftime('%Y%m%d')
     
     etl_duckdb_logger.info(f'Aggregate all Trades for : {business_date}')
     daily_aggregation = get_aggregated_trades(

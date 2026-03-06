@@ -11,4 +11,4 @@ class PortfolioPositions(SQLModel):
     symbol: str = Field(description="", primary_key=True, schema_extra={"examples": [""]})
     ccy: str = Field(description="", primary_key=True, schema_extra={"examples": [""]})
     net_quantity: float = Field(description="", schema_extra={"examples": [""]})
-    net_amount: int = Field(description="", schema_extra={"examples": [""]})
+    net_amount: float = Field(description="", schema_extra={"examples": [""]})

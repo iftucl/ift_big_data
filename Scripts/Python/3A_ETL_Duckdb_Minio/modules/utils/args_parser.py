@@ -36,7 +36,7 @@ def arg_parse_cmd():
         help='Provide repository home directory'
     )
     parser.add_argument(
-        '--date_run',
+        '--run_date',
         required=False,
         type=valid_date,
         default="",

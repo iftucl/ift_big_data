@@ -61,5 +61,5 @@ if __name__ == '__main__':
     trades_logger.info(f"Trades simulation Completed, writing {parsed_args.output_file} output")    
     write_output = WriteOutputFile(cfg['params']['OutputFile'], parsed_args.output_file)
     # write_output = WriteOutputFile(cfg['params']['OutputFile'], "csv")
-    write_output.write_output_minio(trade_simul, file_type="csv")
+    write_output.write_output_minio(trade_simul, file_type=parsed_args.output_file)
     trades_logger.info('Script successfully completed')

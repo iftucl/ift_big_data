@@ -17,7 +17,7 @@ The methods all run on top of the synthetic order-book engine in `LOB_Simulation
 
 ---
 
-## 1) Block_Trade
+## 1 Block_Trade
 
 ### What it does
 `Block_Trade.py` executes each parent order immediately and fully at its arrival time (one-shot block style).
@@ -81,7 +81,7 @@ print(result)
 
 ---
 
-## 2) TWAP
+## 2 TWAP
 
 ### What it does
 `TWAP.py` slices each parent order evenly across a fixed horizon (`time_horizon`) and nets overlapping child slices.
@@ -142,7 +142,7 @@ print(result)
 
 ---
 
-## 3) rl_lob_execution
+## 3 rl_lob_execution
 
 ### What it does
 `rl_lob_execution.py` trains a Deep-Q (DQN) policy for a single parent order execution problem.

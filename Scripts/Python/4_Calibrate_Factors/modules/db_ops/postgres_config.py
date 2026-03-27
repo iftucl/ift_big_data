@@ -50,5 +50,5 @@ class PostgresConfig(BaseModel):
             try:           
                 return os.environ["POSTGRES_DATABASE"]
             except KeyError:
-                return None            
+                return None
         return v

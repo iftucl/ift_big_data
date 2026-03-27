@@ -66,7 +66,7 @@ class DatabaseMethods:
             connection_engine = create_engine(self.sql_config['SQLDBPath'])
             return connection_engine
         except Exception as genericErr:
-            raise Exception('Error occured while attempting to create sqlite db engine') from genericErr
+            raise Exception('Error occurred while attempting to create sqlite db engine') from genericErr
     
     def _conn_postgres(self):
         url_object = engine.URL.create(drivername = 'postgresql', 

@@ -5,7 +5,7 @@ class EquityStatic(SQLModel, table=True):
     SQLModel representation of the equity_static table.
     """
     __tablename__ = "equity_static"
-    __table_args__ = {"schema": "fift", "extend_existing": True}
+    __table_args__ = {"schema": "cash_equity", "extend_existing": True}
 
     symbol: str = Field(primary_key=True, description="The unique symbol for the equity.")
     security: str = Field(default=None, description="The name of the security.")

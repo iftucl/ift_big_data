@@ -1,8 +1,12 @@
-from typing import Optional, Any
-from sqlalchemy import create_engine, engine, exc
+from typing import Optional, Any, Dict
+from contextlib import contextmanager
+
+from sqlalchemy import create_engine, exc
+from sqlalchemy.engine import Engine
+from sqlalchemy.engine.url import URL
 from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import Session
+
 
 class DatabaseMethods:
     """
@@ -30,11 +34,17 @@ class DatabaseMethods:
     :vartype port: Optional[int]
     :ivar sql_config: Configuration for SQLite database
     :vartype sql_config: dict
+    :ivar _engine: Underlying SQLAlchemy Engine
+    :vartype _engine: Engine
+    :ivar _session_factory: SQLAlchemy session factory
+    :vartype _session_factory: sessionmaker
+    :ivar _scoped_session: Scoped session registry
+    :vartype _scoped_session: scoped_session
 
     :raises exc.ArgumentError: If an invalid db_type is provided
     """
 
-    def __init__(self, db_type: str, **kwargs):
+    def __init__(self, db_type: str, **kwargs: Any):
         """
         Initialize the DatabaseMethods instance.
 
@@ -44,16 +54,27 @@ class DatabaseMethods:
         :type kwargs: dict
         """
         self.db_type = db_type.lower()
-        self.username = kwargs.get('username')
-        self.password = kwargs.get('password')
-        self.host = kwargs.get('host')
-        self.database = kwargs.get('database')
-        self.port = kwargs.get('port')
-        self.sql_config = kwargs.get('SQLConfig', {})
-        self._engine = self.open_client_connection(self.db_type)
-        self._session_factory = sessionmaker(bind=self._engine, autocommit=False, autoflush=False)
+        self.username: Optional[str] = kwargs.get("username")
+        self.password: Optional[str] = kwargs.get("password")
+        self.host: Optional[str] = kwargs.get("host")
+        self.database: Optional[str] = kwargs.get("database")
+        self.port: Optional[int] = kwargs.get("port", 5432)
+        self.sql_config: Dict[str, Any] = kwargs.get("SQLConfig", {})
 
-    def __enter__(self):
+        self._engine: Engine = self._open_client_connection()
+        self._session_factory = sessionmaker(
+            bind=self._engine,
+            autocommit=False,
+            autoflush=False,
+        )
+        # keep a single scoped_session, do not recreate it on every access
+        self._scoped_session = scoped_session(self._session_factory)
+
+    # ------------------------------------------------------------------ #
+    # Context-manager for engine lifetime
+    # ------------------------------------------------------------------ #
+
+    def __enter__(self) -> "DatabaseMethods":
         """
         Enter the runtime context related to this object.
 
@@ -66,11 +87,18 @@ class DatabaseMethods:
         """
         Exit the runtime context related to this object.
 
+        This will dispose the underlying engine and close all pooled
+        connections, regardless of whether an exception was raised.
+
         :param exc_type: The exception type, if an exception was raised
         :param exc_val: The exception value, if an exception was raised
         :param exc_tb: The traceback, if an exception was raised
         """
-        self.close()
+        self.dispose()
+
+    # ------------------------------------------------------------------ #
+    # Engine and session accessors
+    # ------------------------------------------------------------------ #
 
     @property
     def connection(self) -> Engine:
@@ -83,78 +111,144 @@ class DatabaseMethods:
         return self._engine
 
     @property
+    def engine(self) -> Engine:
+        """
+        Alias for :pyattr:`connection`.
+
+        :return: The SQLAlchemy engine object
+        :rtype: Engine
+        """
+        return self._engine
+
+    @property
     def session(self) -> Session:
         """
-        Returns a new database session.
+        Returns the current scoped session.
 
-        :return: A new SQLAlchemy session
+        Note: This returns a `Session` associated with the scoped_session
+        registry. Do not close or dispose the engine here; prefer using
+        :meth:`session_scope` for transactional work.
+
+        :return: A SQLAlchemy session
         :rtype: Session
         """
-        return scoped_session(self._session_factory)()
+        return self._scoped_session
+
+    # ------------------------------------------------------------------ #
+    # Transaction / lifecycle helpers
+    # ------------------------------------------------------------------ #
+
+    @contextmanager
+    def session_scope(self):
+        """
+        Provide a transactional scope around a series of operations.
+
+        Within this context:
+
+        * The session is committed if no exceptions are raised.
+        * The session is rolled back if an exception occurs.
+        * The session is removed from the scoped registry on exit.
+
+        Example::
+
+            with db.session_scope() as session:
+                session.add(obj)
+                session.query(...)
+
+        :return: A context-managed SQLAlchemy session
+        :rtype: Session
+        """
+        session = self.session
+        try:
+            yield session
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            # remove the current session from the scoped registry
+            self._scoped_session.remove()
 
     def commit(self):
-        """Commits the current transaction."""
+        """Commits the current transaction on the scoped session."""
         self.session.commit()
 
-    def close(self, commit: bool = True):
+    def dispose(self) -> None:
         """
-        Closes the database connection.
+        Dispose the database engine and remove the scoped session.
 
-        :param commit: Whether to commit before closing, defaults to True
-        :type commit: bool
+        This closes all connections in the pool and should be called when
+        you are completely done using this DatabaseMethods instance.
         """
-        if commit:
-            self.commit()
-        self.session.close()
+        # remove scoped session bindings first
+        self._scoped_session.remove()
         self._engine.dispose()
+
+    # ------------------------------------------------------------------ #
+    # Internal connection creation
+    # ------------------------------------------------------------------ #
 
     def _conn_sqlite(self) -> Engine:
         """
         Creates and returns a SQLite database engine.
 
+        Expects ``SQLConfig['SQLDBPath']`` to contain a valid SQLAlchemy
+        SQLite URL (e.g. ``'sqlite:///mydb.sqlite3'``).
+
         :return: SQLAlchemy engine for SQLite
         :rtype: Engine
+        :raises ValueError: If the SQLite path is missing
         :raises Exception: If there's an error creating the SQLite engine
         """
+        db_path = self.sql_config.get("SQLDBPath")
+        if not db_path:
+            raise ValueError("SQLite configuration missing 'SQLDBPath'")
         try:
-            return create_engine(self.sql_config['SQLDBPath'])
+            return create_engine(db_path)
         except Exception as e:
-            raise Exception('Error occurred while attempting to create SQLite database engine') from e
+            raise Exception(
+                "Error occurred while attempting to create SQLite database engine"
+            ) from e
 
     def _conn_postgres(self) -> Engine:
         """
         Creates and returns a PostgreSQL database engine.
 
+        The following attributes should be set on the instance:
+        ``username``, ``password``, ``host``, ``database``, and optionally ``port``.
+
         :return: SQLAlchemy engine for PostgreSQL
         :rtype: Engine
         :raises Exception: If there's an error creating the PostgreSQL engine
         """
-        url_object = engine.URL.create(
-            drivername='postgresql',
+        url_object = URL.create(
+            drivername="postgresql",
             username=self.username,
             password=self.password,
             host=self.host,
             database=self.database,
-            port=self.port
+            port=self.port,
         )
         try:
             return create_engine(url_object, pool_size=20, max_overflow=0)
         except Exception as e:
-            raise Exception('Error occurred while attempting to create PostgreSQL engine') from e
+            raise Exception(
+                "Error occurred while attempting to create PostgreSQL engine"
+            ) from e
 
-    def open_client_connection(self, db_type: str) -> Engine:
+    def _open_client_connection(self) -> Engine:
         """
         Opens a new database connection based on the specified database type.
 
-        :param db_type: The type of database ('postgres' or 'sqlite')
-        :type db_type: str
         :return: SQLAlchemy engine object
         :rtype: Engine
         :raises exc.ArgumentError: If an invalid db_type is provided
         """
-        if db_type == 'postgres':
+        if self.db_type == "postgres":
             return self._conn_postgres()
-        elif db_type == 'sqlite':
+        elif self.db_type == "sqlite":
             return self._conn_sqlite()
         else:
-            raise exc.ArgumentError('Only two values are expected for db_type: postgres or sqlite')
+            raise exc.ArgumentError(
+                "Only two values are expected for db_type: postgres or sqlite"
+            )

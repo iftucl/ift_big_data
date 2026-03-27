@@ -22,31 +22,54 @@ from modules.output_data.load_redis_db import load_market_moves_redis
 
 
 
-def main():
-    calibration_logger.info("Started Calibration of market risk factors")
-    args = arg_parse_cmd()
-    parsed_args = args.parse_args()
-    calibration_logger.info("Command Line argument parsed. Script running for {parsed_args.env_type} on date run {parsed_args.date_run}")
-    # example: conf = ReadConfig("dev")
-    conf = ReadConfig(parsed_args.env_type)
-    # sets environment var, example set_env_variables(env_variables=conf['config']['env_variables'], env_type="dev", env_file=True)
-    set_env_variables(env_variables=conf['config']['env_variables'],
-                      env_type=parsed_args.env_type,
-                      env_file=True)
-    calibration_logger.info("Calculating distribution parameters for stocks returns on date run {parsed_args.date_run}")
-    date_run=parsed_args.date_run
+def main(
+    date_run: str,
+) -> None:
+    """
+    Main orchestration for Factor Calibrate.
+
+    Orchestrate the flow of factors calibration.
+
+    :param date_run: a string representation for the date run. Conventions are 'YYYY-MM-DD'.
+    :type date_run: str
+
+    :Example:
+        >>> main(date_run="2023-11-23")
+    """
+    
     # example date_run = "2023-11-23"
     sector_ret_dist = get_distribution_params(start_date=date_run,
                                               end_date=get_previous_business_dates(start_date=date_run, look_back=10),
                                               group_type="gics_sector",
                                               holding_period=5)
-    calibration_logger.info("Fetching Company Statics...")
+    
+    calibration_logger.info("Fetching Company Statics...")    
     company_statics = get_equity_static(database="fift")
+
     calibration_logger.info("Fetching Last Close Price...")
     price_close = get_previous_close_px(cob_date=date_run, database="fift")
-    calibration_logger.info("Set output dictionaries for redis load...")
+    
+    calibration_logger.info("Set output dictionaries for redis load...")    
     load_market_moves_redis(company_statics=company_statics, sector_ret_dist=sector_ret_dist, close_price=price_close)
-    calibration_logger.info("Script completed")
+    
 
 if __name__ == '__main__':
-    main()
+    calibration_logger.info("Started Calibration of market risk factors")        
+    
+    args = arg_parse_cmd()
+    parsed_args = args.parse_args()
+    
+    calibration_logger.info(f"Command Line argument parsed. Script running for {parsed_args.env_type} on date run {parsed_args.date_run}")
+    # example: conf = ReadConfig("dev")
+    conf = ReadConfig(parsed_args.env_type)
+    
+    # sets environment var, example set_env_variables(env_variables=conf['config']['env_variables'], env_type="dev", env_file=True)
+    set_env_variables(env_variables=conf['config']['env_variables'],
+                      env_type=parsed_args.env_type,
+                      env_file=True)
+    
+    calibration_logger.info("Calculating distribution parameters for stocks returns on date run {parsed_args.date_run}")    
+
+    main(date_run=parsed_args.date_run)
+    
+    calibration_logger.info("Script completed")

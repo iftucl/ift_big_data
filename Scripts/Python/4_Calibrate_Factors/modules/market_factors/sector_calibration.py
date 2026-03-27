@@ -45,7 +45,12 @@ HAVING AVG(one_day_return) IS NOT NULL AND STDDEV(one_day_return) IS NOT NULL
 
 
 
-def get_distribution_params(start_date: str, end_date: str, group_type: Literal["gics_sector", "country", "region"], holding_period: int = 1):
+def get_distribution_params(
+    start_date: str, 
+    end_date: str,
+    group_type: Literal["gics_sector", "country", "region"],
+    holding_period: int = 1
+) -> list:
     """
     Get returns distribution parameters at peer group level.
 

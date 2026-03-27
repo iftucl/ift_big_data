@@ -15,24 +15,28 @@ def get_postgres_data(sql_query: str, **kwargs):
         query_execute=text(sql_query)
     else:
         query_execute=sql_query
+    
     pg_config = PostgresConfig(username=kwargs.get("username"),
                                password=kwargs.get("password"),
                                host=kwargs.get("host"),
                                port=kwargs.get("port"),
                                database=kwargs.get("database"))
 
-    with DatabaseMethods("postgres",
-                         username=pg_config.username,
-                         password=pg_config.password,
-                         host=pg_config.host,
-                         port=pg_config.port,
-                         database=pg_config.database) as db:
+    db_client = DatabaseMethods(
+        "postgres",
+        username=pg_config.username,
+        password=pg_config.password,
+        host=pg_config.host,
+        port=pg_config.port,
+        database=pg_config.database)
+    with db_client as db:
         try:
             result = db.session.execute(query_execute)
-            return result.all()
+            return result.scalars().all()
         except Exception as e:
             calibration_logger.error(f"An error occurred: {e}")
             raise
+
 
 
 

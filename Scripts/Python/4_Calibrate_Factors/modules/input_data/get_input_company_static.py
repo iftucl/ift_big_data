@@ -1,5 +1,6 @@
+from sqlalchemy import select
 from modules.db_ops.extract_from_query import get_postgres_data
-from modules.data_models.static_model import EquityStatic
+from modules.data_models.table_equity_static import EquityStatic
 
 
 def get_equity_static(database: str = "fift", **kwargs):
@@ -10,6 +11,8 @@ def get_equity_static(database: str = "fift", **kwargs):
     :type: cob_date: str    
     """
     sql_query = """SELECT * FROM cash_equity.equity_static"""
+    sql_query = select(EquityStatic)
+
     static_data = get_postgres_data(sql_query=sql_query, database = database, **kwargs)
     return [EquityStatic(company_id=x[0],
                          company_name=x[1],

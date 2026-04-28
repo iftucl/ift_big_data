@@ -95,6 +95,19 @@ SELECT country, COUNT(symbol) AS no_companies -- AS operator will rename the out
 FROM equity_static
 GROUP BY country; -- in this query, we select the country Column and we create a new one (the count of companies per country date) and we group to know how many companies have same country
 
+-- 3.b.1 NOT A group by but get the largest position using partition
+-- Window Framing: instead of thinking group by something, create one running calculator for each cob_date and trader
+SELECT * FROM (
+	SELECT 
+		cob_date, 
+		trader, 
+		symbol, 
+		ccy, 
+		net_quantity, 
+		ROW_NUMBER() OVER (PARTITION BY cob_date, trader ORDER BY ABS(net_quantity) DESC) AS rn
+	FROM cash_equity.portfolio_positions
+) s WHERE rn = 1;
+
 -- 3.c GROUP BY query with functions ROUND, SUM, AVG, MIN and MAX in order to summarise the min, max, total and the average
 --     two traders summary position for a given date
 SELECT trader, cob_date, SUM(net_amount) AS sum_amount,
@@ -145,6 +158,25 @@ WHERE portfolio_positions.cob_date = '2023-10-27'
 ORDER BY pnl
 LIMIT 5;
 
+
+-- 4.d semi-joins
+-- returns rows from one side only & stops scanning when a match is found making it faster than JOIN + DISTINCT
+SELECT * FROM cash_equity.equity_prices ep
+WHERE EXISTS (
+	SELECT 1
+	FROM cash_equity.equity_static es
+	WHERE ep.symbol_id=es.symbol
+);
+
+-- 4.e anti-joins
+-- opposite of the semi-joins: answering the question - which stocks we have a static but not a price?
+SELECT * FROM cash_equity.equity_static es
+WHERE NOT EXISTS (
+	SELECT 1
+	FROM cash_equity.equity_prices ep
+	WHERE ep.symbol_id=es.symbol
+);
+
 /*-------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
 SECTION 5
 CASE to return column values based on conditions
@@ -157,7 +189,7 @@ CASE
 	WHEN net_quantity < 0 THEN 'SHORT'
 	WHEN net_quantity > 0 THEN 'LONG'
 	ELSE 'NEUTRAL'
-	END AS position_type,
+END AS position_type,
 SUM(net_amount)
 FROM portfolio_positions 
 WHERE cob_date = '2023-10-27'

@@ -15,7 +15,9 @@ X-Forwarded-Groups: ift-scarp-admin
 ```
 
 ```bash
-
+cd Scripts/Python/6_UI_Trades_App
+poetry install
+poetry shell
 poetry run uvicorn main:app --port 8100 --reload
 
 ```

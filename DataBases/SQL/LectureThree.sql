@@ -108,6 +108,22 @@ SELECT * FROM (
 	FROM cash_equity.portfolio_positions
 ) s WHERE rn = 1;
 
+-- 3.b.2 PARTITION is also very useful to calculate stats at group level
+-- here for example we calculate the return by stock (symbol and currency) with a 3 days holding period
+-- by default LAG has 1 look-back
+-- please also note the usage of CAST which casts the type returned to the columns as a DECIMAL with 2 digits precision
+SELECT symbol_id,
+	   currency, 
+	   close_price, 
+	   cob_date,
+ 	   CAST( -- cast is not really needed here, you could use ROUND in this case... See section 3.c
+		   (LAG(close_price, 3) OVER (
+			   PARTITION BY symbol_id, currency ORDER BY cob_date
+			) / close_price - 1) * 100 AS DECIMAL(12, 2)
+		) AS return_price
+FROM cash_equity.equity_prices LIMIT 10;
+
+
 -- 3.c GROUP BY query with functions ROUND, SUM, AVG, MIN and MAX in order to summarise the min, max, total and the average
 --     two traders summary position for a given date
 SELECT trader, cob_date, SUM(net_amount) AS sum_amount,

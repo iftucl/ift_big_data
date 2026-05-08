@@ -117,11 +117,41 @@ SELECT symbol_id,
 	   close_price, 
 	   cob_date,
  	   CAST( -- cast is not really needed here, you could use ROUND in this case... See section 3.c
-		   (LAG(close_price, 3) OVER (
+		   (close_price / LAG(close_price, 3) OVER (
 			   PARTITION BY symbol_id, currency ORDER BY cob_date
-			) / close_price - 1) * 100 AS DECIMAL(12, 2)
+			) - 1) * 100 AS DECIMAL(12, 2)
 		) AS return_price
 FROM cash_equity.equity_prices LIMIT 10;
+
+/*
+-- 3.b.3 PARTITION to calculate cumulative returns
+expanding from previous query, it is also possible to calculate the cumulative returns
+of the stocks by adding SUM function. Here, without a group by expression the function is applied within the partition.
+Please note, two new concepts are introduced in this query: 
+	1. Common Table Expression (CTE): a named query block that exists only for the duration of one SQL statement.
+	2. COALESCE: when data may be missing and we would like to have a fallback value.
+*/
+WITH company_returns AS (
+	SELECT symbol_id,
+		currency, 
+		close_price, 
+		cob_date,
+		COALESCE(
+			(close_price / LAG(close_price, 3) OVER (
+				PARTITION BY symbol_id, currency ORDER BY cob_date
+				) - 1) * 100, 0
+			) AS return_price
+	FROM cash_equity.equity_prices
+) SELECT symbol_id,
+		currency, 
+		close_price, 
+		cob_date,
+		ROUND(
+			SUM(return_price) OVER (
+				PARTITION BY symbol_id, currency ORDER BY cob_date
+			), 2) AS cumulative_return
+FROM company_returns
+
 
 
 -- 3.c GROUP BY query with functions ROUND, SUM, AVG, MIN and MAX in order to summarise the min, max, total and the average

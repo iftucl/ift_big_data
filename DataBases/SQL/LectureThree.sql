@@ -95,7 +95,29 @@ SELECT country, COUNT(symbol) AS no_companies -- AS operator will rename the out
 FROM equity_static
 GROUP BY country; -- in this query, we select the country Column and we create a new one (the count of companies per country date) and we group to know how many companies have same country
 
--- 3.b.1 NOT A group by but get the largest position using partition
+-- 3.c.1 GROUP BY query with functions ROUND, SUM, AVG, MIN and MAX in order to summarise the min, max, total and the average
+--     two traders summary position for a given date
+SELECT trader, cob_date, SUM(net_amount) AS sum_amount,
+ROUND(AVG(net_amount), 1) AS mean_amount, 
+MIN(net_amount), MAX(net_amount) 
+FROM portfolio_positions
+WHERE trader IN ('MRH5231', 'DGR1983')  -- we want only positions for our traders
+AND cob_date = '2023-10-27'		  -- and only for specific date
+GROUP BY trader, cob_date
+ORDER BY sum_amount DESC; 		-- this sorts out output from larger to smaller
+
+-- 3.c.2 GROUP BY to retain only traders with overall long position exposure
+--     in this case we need first to aggregate and then retrain all traders that at end of day have an overall
+--		net exposure positive. As the filter is applied on the grouped positions, we need to use HAVING to filter only positive total amount.
+SELECT trader, cob_date, SUM(net_amount) AS sum_amount
+FROM cash_equity.portfolio_positions
+WHERE cob_date = '2023-10-27'		  -- and only for specific date
+GROUP BY trader, cob_date
+HAVING SUM(net_amount) > 0
+ORDER BY sum_amount DESC; 		-- this sorts out output from larger to smaller
+
+
+-- 3.d.1 NOT A group by but get the largest position using partition
 -- Window Framing: instead of thinking group by something, create one running calculator for each cob_date and trader
 SELECT * FROM (
 	SELECT 
@@ -108,7 +130,7 @@ SELECT * FROM (
 	FROM cash_equity.portfolio_positions
 ) s WHERE rn = 1;
 
--- 3.b.2 PARTITION is also very useful to calculate stats at group level
+-- 3.d.2 PARTITION is also very useful to calculate stats at group level
 -- here for example we calculate the return by stock (symbol and currency) with a 3 days holding period
 -- by default LAG has 1 look-back
 -- please also note the usage of CAST which casts the type returned to the columns as a DECIMAL with 2 digits precision
@@ -124,7 +146,7 @@ SELECT symbol_id,
 FROM cash_equity.equity_prices LIMIT 10;
 
 /*
--- 3.b.3 PARTITION to calculate cumulative returns
+-- 3.d.3 PARTITION to calculate cumulative returns
 expanding from previous query, it is also possible to calculate the cumulative returns
 of the stocks by adding SUM function. Here, without a group by expression the function is applied within the partition.
 Please note, two new concepts are introduced in this query: 
@@ -152,18 +174,6 @@ WITH company_returns AS (
 			), 2) AS cumulative_return
 FROM company_returns
 
-
-
--- 3.c GROUP BY query with functions ROUND, SUM, AVG, MIN and MAX in order to summarise the min, max, total and the average
---     two traders summary position for a given date
-SELECT trader, cob_date, SUM(net_amount) AS sum_amount,
-ROUND(AVG(net_amount), 1) AS mean_amount, 
-MIN(net_amount), MAX(net_amount) 
-FROM portfolio_positions
-WHERE trader IN ('MRH5231', 'DGR1983')  -- we want only positions for our traders
-AND cob_date = '2023-10-27'		  -- and only for specific date
-GROUP BY trader, cob_date
-ORDER BY sum_amount DESC; 		-- this sorts out output from larger to smaller
 
 /*-------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
 Section 4. JOINS statements
